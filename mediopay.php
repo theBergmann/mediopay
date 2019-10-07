@@ -1,6 +1,6 @@
 <?php
 /*
- * Plugin Name: MedioPay Micropayments
+ * Plugin Name: MedioPay
  * Description: This plugin allows PayWalls and Tip Button for Wordpress
  * Author: MedioPay
  * Author URI: https://mediopay.com
@@ -21,7 +21,7 @@ function mediopaydeactivate() {
 
 
 register_activation_hook( 'MedioPay/mediopay.php', 'mediopayactivate' );
-register_activation_hook( 'MedioPay/mediopay', 'mediopayactivate_data' );
+register_activation_hook( 'MedioPay/mediopay.php', 'mediopayactivate_data' );
 
 // Create Table in Database
 
@@ -119,11 +119,12 @@ function mediopay_option_page() {
 	$current_thankyou = $myrows[0]->fixedThankYou;
 	$myrows = $wpdb->get_results( "SELECT noEditField FROM wp_mediopay WHERE id = 1" );
 	$current_edit = $myrows[0]->noEditField;    
-	$path = plugin_dir_url( 'cp_bitcoin-sv.php');
-	$path = $path . "MedioPay/mediopay";
+	$path = plugin_dir_url( 'mediopay.php');
+	$path = $path . "MedioPay/mediopay.php";
    ?>
    Set your BitCoin address, your MoneyButton ID or your PayMail address<br />   
-    	<form name='setmediopay' method='post' action=" <?php echo $path ?>">
+    	<form name='setmediopay' method='post' action=" <?php esc_url( $_SERVER['REQUEST_URI'] ) ?>">
+    	<!--<form name="setmediopay" id="setmediopay">-->
     	<input type='text' name='address' <?php if (isset($currentaddress) AND $currentaddress !== "none") {echo "value='" . $currentaddress . "'";} ?>
     	/><br /><br />
     	Set the currency to denominate payments.<br />
@@ -193,7 +194,7 @@ function mediopay_option_page() {
 	</script>
    <input type="submit" class="button button-primary" value='save' />
    </form>
-    	<?php	
+    	<?php
 }
 
 // save the settings
@@ -290,7 +291,7 @@ if(isset($_POST['address']) OR isset($_POST['currency']) OR isset($_POST['deacti
 	if(isset($_POST['thisURL'])) {	
 		$thisURL = $_POST['thisURL'];
 		echo "<script>thisURL='" . $thisURL . "';</script>";
-		echo $thisURL;
+		//echo $thisURL;
 	}
 	echo "<script>console.log('this URL');</script>";
 	echo "<script>location.replace(thisURL);</script>";
@@ -485,9 +486,13 @@ function wpdev_before_after($post_content) {
 		$fullcontent = $post_content . "<div id='counter'></div><div class='money-button' id='tbutton'></div></div>";
 	}
 	else {
-		//echo $meta_checkbox;
 		$fullcontent = $post_content;	
 	}   
+	
+	$path = plugin_dir_url( 'mediopay.php');
+	$path = $path . "MedioPay/scripts.js";
+	//echo "<script>scriptPath=\"" . $path . "\";</script>";
+	echo "<script src='" . $path . "'></script>";
 	
 	// style the locked and unlocked content
    ?>
@@ -529,7 +534,7 @@ function wpdev_before_after($post_content) {
     </style>   
 <script src="https://unpkg.com/bsv@0.30.0/bsv.min.js"></script>
 <script src="https://www.moneybutton.com/moneybutton.js"></script>
-<script src="/blog/wp-content/plugins/MedioPay/script.js"></script>
+<!--<script src="/blog/wp-content/plugins/MedioPay/scripts.js"></script>-->
     <script>
 	// create Objects to pass to the money button creation script    
 	dataDomain = window.location.hostname;
@@ -714,6 +719,10 @@ function paywall_function( $attr, $content) {
 	else {
 		echo "<script>paymentAmount=\"" . $current_fixedAmount . "\";</script>";	
 	}
+	$path = plugin_dir_url( 'mediopay.php');
+	$path = $path . "MedioPay/scripts.js";
+	//echo "<script>scriptPath=\"" . $path . "\";</script>";
+	echo "<script src='" . $path . "'></script>";
 	?>
 	<div id="frame"><div id="counter"></div>
 	<div class="money-button" id="mbutton"></div></div>
