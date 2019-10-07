@@ -1,9 +1,9 @@
 <?php
 /*
- * Plugin Name: MedioPay Micropayments
- * Description: This plugin allows PayWalls and Tip Button for Wordpress
- * Author: MedioPay
- * Author URI: https://mediopay.com
+ * Plugin Name: Bitcoin SV Paywall Plugin for Wordpress
+ * Description: This plugin allows [cp-hide-button] shortcode with Bitcoin SV / Money Button
+ * Author: Vibe Internet Team
+ * Author URI: https://vibeit.com.au
  */
 
 // Activation of the Plugin: Create Database
