@@ -58,7 +58,7 @@ function querryPlanaria(object) {
          },
         "limit": 120,
         "sort": { "blk.i": 1 }
-      }
+       }
    }	
 	var b64 = btoa(JSON.stringify(query));
 	var url = "https://genesis.bitdb.network/q/1FnauZ9aUH2Bex6JzdcV4eNX7oLSSEbxtN/" + b64;
@@ -180,11 +180,11 @@ function loadButton(word) {
 	console.log("type " + object.typenumber);
 	if (object.typenumber == "100101") {
 		paywallreturn = object.returndata;	
-			document.getElementById("frame").innerHTML = object.number + " people have bought this article.";
+			document.getElementById("counter").innerHTML = object.number + " people have bought this article.";
 	}
 	if (object.typenumber == "100201") {
 		tipreturn = object.returndata;
-			document.getElementById("frame").innerHTML = object.number + " people have tiped the author.";
+			document.getElementById("counter").innerHTML = object.number + " people have tiped the author.";
 	}
 	if (object.paywall == "yes") {
 		skript = "handleSuccessfulPayment(payment)";	
@@ -306,11 +306,10 @@ function loadButton(word) {
       onError: function (arg) { console.log('onError', arg) }
    }
 	console.log(mbobject);
+	console.log("trying to load money button " + element);
 	const div = document.getElementById(element);
+	console.log(div);
    moneyButton.render(div,	mbobject);		   
-   
-
-
  }
 
 
