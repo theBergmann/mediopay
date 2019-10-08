@@ -449,6 +449,11 @@ function wpdev_before_after($post_content) {
 			$meta_thankyou = $current_thankyou;	
 		}
 	}
+	if ( shortcode_exists( 'paywall' ) ) {
+     $shortcode = "yes";
+     echo "<script>shortCode='" . $shortcode . "';</script>";
+	}	
+	
 	echo "<script>thankYou=\"" . $meta_thankyou . "\";console.log('thankYou'); console.log(thankYou)</script>";
 	echo "<script>theAddress='" . $address . "';</script>";
 	echo "<script>theCurrency='" . $currency . "';</script>";
@@ -459,14 +464,14 @@ function wpdev_before_after($post_content) {
 	// create dummy content
 	
 	$lengthContent = strlen($meta_paidcontent);
-	$realContent = $meta_paidcontent;
-	$realContent =  json_encode($realContent);
-	$blackenedContent = "";	
+	$realContent1 = $meta_paidcontent;
+	$realContent1 =  json_encode($realContent1);
+	$blackenedContent1 = "";	
 	for ($i=0; $i<$lengthContent; $i++) {
-			$blackenedContent .=	"<span style='background-color:#7B7878'>&nbsp;</span>" ;		
+			$blackenedContent1 .=	"<span style='background-color:#7B7878'>&nbsp;</span>" ;		
 	}	
-	echo "<script>realContent=" . $realContent . ";</script>";
-	echo "<script>lengthText=\"" . $lengthContent . "\";</script>";
+	echo "<script>realContent1=" . $realContent1 . ";</script>";
+	echo "<script>lengthText1=\"" . $lengthContent . "\";</script>";
 	
 	$dataContent = get_the_content();
 	$dataContent = substr($dataContent, 0, 168);
@@ -478,15 +483,15 @@ function wpdev_before_after($post_content) {
 	echo "<script>checkBox=\"" . $meta_checkbox . "\";</script>";
 	echo "<script>tipAmount=\"" . $meta_tip_amount	 . "\";</script>";
 	if ($meta_paidcontent) {
-	   $fullcontent = $post_content . "<div id='frame'><div id='counter'></div><div class='money-button' id='mbutton'></div></div><div id='unlockable'>" . $blackenedContent . "</div>";
+	   $fullcontent1 = $post_content . "<div id='frame1'><div id='counter1'></div><div class='money-button' id='mbutton1'></div></div><div id='unlockable1'>" . $blackenedContent1 . "</div>";
 	   if ($meta_checkbox == "yes");
-	   	$fullcontent = $fullcontent . "<div class='money-button' id='tbutton'></div>";
+	   	$fullcontent1 = $fullcontent1 . "<div id='counterTips'></div><div class='money-button' id='tbutton'></div>";
 	}
 	else if ($meta_checkbox == "yes") {
-		$fullcontent = $post_content . "<div id='counter'></div><div class='money-button' id='tbutton'></div></div>";
+		$fullcontent1 = $post_content . "<div id='counterTips'></div><div class='money-button' id='tbutton'></div></div>";
 	}
 	else {
-		$fullcontent = $post_content;	
+		$fullcontent1 = $post_content;	
 	}   
 	
 	$path = plugin_dir_url( 'mediopay.php');
@@ -498,7 +503,7 @@ function wpdev_before_after($post_content) {
    ?>
    <style>
         /* The CSS you'll need in your website */
-        #unlockable {
+        #unlockable1 {
             /*visibility: hidden;
             opacity: 0;
             transition: opacity 5s;*/
@@ -512,7 +517,7 @@ function wpdev_before_after($post_content) {
                  0 0 20px black;
         }
 
-        #unlockable.unlocked {
+        #unlockable1.unlocked {
         		opacity:1;
         		transition: opacity 3s;
             color:#2F2F2F;
@@ -520,13 +525,13 @@ function wpdev_before_after($post_content) {
             text-shadow: 0 0 0 white;
             transition: text-shadow 3s;
         }
-        #frame {
+        #frame1 {
 				/*border-left:10px solid #4772F6;*/    
 				height:110px;
 				padding-left:10px;
         
         }
-		 #frame.paid {
+		 #frame1.paid {
 				border-left:10px solid #4772F6;
 				height:80px;	 
 		 }        
@@ -537,6 +542,8 @@ function wpdev_before_after($post_content) {
 <!--<script src="/blog/wp-content/plugins/MedioPay/scripts.js"></script>-->
     <script>
 	// create Objects to pass to the money button creation script    
+	console.log("paywall with second edit");
+	secondEdit = "yes";
 	dataDomain = window.location.hostname;
 	dataURL = window.location.pathname;
    paymentObjects = [];
@@ -568,7 +575,8 @@ function wpdev_before_after($post_content) {
 	 else {    	
     	 paymentLabel = "buy";
    }
-   if (typeof realContent !== "undefined" && realContent.length > 0) {
+   if (typeof realContent1 !== "undefined" && realContent1.length > 0) {
+   	console.log("by editor : " + dataTitle);
    	  var returndata = bsv.Script.buildDataOut(['1NYJFDJbcSS2xGhGcxYnQWoh4DAjydjfYU', "" + '100101', "" + dataTitle, "" + dataContent, "" + dataDomain, "" + dataURL, "" + sharingQuota, "" + refQuota]).toASM();
 		 	paywall = {
 			paywall: "yes",
@@ -597,27 +605,31 @@ function wpdev_before_after($post_content) {
 
 	
 	// load functions with the objects
+	if (shortCode == "yes") {
+	}
+	else {
 		querryPlanaria(paymentObjects);
 		getAddress(paymentObjects);
+	}
 		
 	// End new!		
 		
 	//var returndata = bsv.Script.buildDataOut(['1NYJFDJbcSS2xGhGcxYnQWoh4DAjydjfYU', "" + '100101', "" + dataTitle, "" + dataContent, "" + dataDomain, "" + dataURL]).toASM();		*/	
-    function handleSuccessfulPayment(payment) {
+    function handleSuccessfulPayment1(payment) {
     	console.log("got payment");
         	console.log(payment);
-         unlockContent(payment);        
+         unlockContent1(payment);        
     }
-    function handleFailedPayment(error) {
+    function handleFailedPayment1(error) {
             alert("Sorry, the payment did not process correctly.")
     }
-    function unlockContent(payment) {
-        		document.getElementById("unlockable").innerHTML = realContent;
-           document.getElementById("unlockable").classList.toggle("unlocked");
-				document.getElementById("frame").classList.toggle("paid");
-            document.getElementById("frame").innerHTML="<em>You can share this link to get your share of later payments: <a href='" + dataLink + "?ref=" + payment.userId + "'>" +  dataLink + "</a></em>";
-            document.getElementById("counter").innerHTML="";
-				document.getElementById("mbutton").innerHTML="";
+    function unlockContent1(payment) {
+        		document.getElementById("unlockable1").innerHTML = realContent1;
+           document.getElementById("unlockable1").classList.toggle("unlocked");
+				document.getElementById("frame1").classList.toggle("paid");
+            document.getElementById("frame1").innerHTML="<em>You can share this link to get your share of later payments: <a href='" + dataLink + "?ref=" + payment.userId + "'>" +  dataLink + "</a></em>";
+            document.getElementById("counter1").innerHTML="";
+				document.getElementById("mbutton1").innerHTML="";
     }
 	 function handleSuccessfulTip(payment) {
 	 	console.log("ty " + thankYou);
@@ -627,7 +639,7 @@ function wpdev_before_after($post_content) {
     
     </script>	
 <?php  
-   return $fullcontent;    
+   return $fullcontent1;    
 }
      
 add_filter('the_content', 'wpdev_before_after');
@@ -690,18 +702,18 @@ function paywall_function( $attr, $content) {
 	echo "<script>nometanet='" . $current_metanet . "';</script>";	
 	
 	$lengthContent = strlen($content);
-	$realContent = $content;
-	$realContent =  json_encode($realContent);
-	$blackenedContent = "";	
+	$realContent2 = $content;
+	$realContent2 =  json_encode($realContent2);
+	$blackenedContent2 = "";	
 	for ($i=0; $i<$lengthContent; $i++) {
-		if (ctype_space(substr($realContent, $i))) {
-			$blackenedContent .= "&nbsp;";		
+		if (ctype_space(substr($realContent2, $i))) {
+			$blackenedContent2 .= "&nbsp;";		
 		}
 		else {
-			$blackenedContent .=	"<span style='background-color:#7B7878'>&nbsp;</span>";	
+			$blackenedContent2 .=	"<span style='background-color:#7B7878'>&nbsp;</span>";	
 		}			
 	}	
-	echo "<script>realContent=" . $realContent . ";</script>";
+	echo "<script>realContent2=" . $realContent2 . ";</script>";
 	echo "<script>lengthText=\"" . $lengthContent . "\";</script>";
 	echo "<script>paymentAmount=\"" . $meta_amount . "\";</script>";
 	echo "<script>checkBox=\"" . $meta_checkbox . "\";</script>";
@@ -712,7 +724,7 @@ function paywall_function( $attr, $content) {
 	$dataContent = wp_strip_all_tags( $dataContent );
 	echo "<script>dataContent=\"" . $dataContent . "\";</script>";
 	echo "<script>dataLink=\"" . get_permalink() . "\";</script>";
-	echo "<script>dataTitle=\"" . get_the_title() . "\";</script>";
+	echo "<script>dataTitle=\"" . get_the_title() . "\";dataTitle = encodeURI(dataTitle); console.log(dataTitle);</script>";
 	if (isset($attr["amount"])){
 		echo "<script>paymentAmount=\"" . $attr["amount"] . "\";</script>";
 	}
@@ -724,11 +736,11 @@ function paywall_function( $attr, $content) {
 	//echo "<script>scriptPath=\"" . $path . "\";</script>";
 	echo "<script src='" . $path . "'></script>";
 	?>
-	<div id="frame"><div id="counter"></div>
-	<div class="money-button" id="mbutton"></div></div>
+	<div id="frame2"><div id="counter2"></div>
+	<div class="money-button" id="mbutton2"></div></div>
    <style>
         /* The CSS you'll need in your website */
-        #unlockable {
+        #unlockable2 {
             /*visibility: hidden;
             opacity: 0;
             transition: opacity 5s;*/
@@ -742,7 +754,7 @@ function paywall_function( $attr, $content) {
                  0 0 20px black;
         }
 
-        #unlockable.unlocked {
+        #unlockable2.unlocked {
         		opacity:1;
         		transition: opacity 3s;
             color:#2F2F2F;
@@ -750,30 +762,30 @@ function paywall_function( $attr, $content) {
             text-shadow: 0 0 0 white;
             transition: text-shadow 3s;
         }
-        #frame {
+        #frame2 {
 				/*border-left:10px solid #4772F6;*/    
 				height:110px;
 				padding-left:10px;
         
         }
-		 #frame.paid {
+		 #frame2.paid {
 				border-left:10px solid #4772F6;
 				height:80px;	 
 		 }        
         
     </style>   
     <script>
+   console.log("paywall with shortcode");
 	console.log(window.location.hostname);  
 	console.log(window.location.pathname);
 	dataDomain = window.location.hostname;
 	dataURL = window.location.pathname;
-	
-	var returndata = bsv.Script.buildDataOut(['1NYJFDJbcSS2xGhGcxYnQWoh4DAjydjfYU', "" + '100101', "" + dataTitle, "" + dataContent, "" + dataDomain, "" + dataURL, "" + sharingQuota, "" + refQuota]).toASM();
-	shortCodeObject = [];
-	paywall = {
-				paywall: "yes",
+	console.log("by shortcode : " + dataTitle);
+	var returndata = bsv.Script.buildDataOut(['1NYJFDJbcSS2xGhGcxYnQWoh4DAjydjfYU', "" + '100102', "" + dataTitle, "" + dataContent, "" + dataDomain, "" + dataURL, "" + sharingQuota, "" + refQuota]).toASM();
+	paywall2 = {
+				paywall2: "yes",
 				tips: "no",
-				typenumber: "100101",
+				typenumber: "100102",
 				title: dataTitle,
 				amount: paymentAmount,
 				baseurl: dataDomain,
@@ -787,12 +799,12 @@ function paywall_function( $attr, $content) {
 				currency: theCurrency    	    	    		 
 	}
 	if (typeof refID !== "undefined") {
-			 	paywall.refID = refID; 
-			 	paywall.outputs = 2;  	  
+			 	paywall2.refID = refID; 
+			 	paywall2.outputs = 2;  	  
    }
-   shortCodeObject.push(paywall);
+   paymentObjects.push(paywall2);
    
-	
+	/*
 	if (checkBox == "yes") {
     	  var returndata = bsv.Script.buildDataOut(['1NYJFDJbcSS2xGhGcxYnQWoh4DAjydjfYU', "" + '100201', "" + dataTitle, "" + dataContent, "" + dataDomain, "" + dataURL, "" + sharingQuota, "" + refQuota]).toASM();
     	  paymentLabel = "tip";
@@ -816,35 +828,36 @@ function paywall_function( $attr, $content) {
 			 tip.refID = refID;    	 
 			 tip.outputs = 2;   
     	  }
-    	  shortCodeObject.push(tip);
-	 }   
-   console.log(shortCodeObject);
+    	  paymentObjects.push(tip);
+	 }   */
+   console.log(paymentObjects);
 
 	k = 0;
 	p = 0;
-	querryPlanaria(shortCodeObject);
-	getAddress(shortCodeObject);
-	function handleSuccessfulPayment(payment) {
+	querryPlanaria(paymentObjects);
+	getAddress(paymentObjects);
+	function handleSuccessfulPayment2(payment) {
+			console.log("got another payment");
         	console.log(payment);
-         unlockContent(payment);
+         unlockContent2(payment);
             
     }
     function handleFailedPayment(error) {
             alert("Sorry, the payment did not process correctly.")
     }
-    function unlockContent(payment) {
-        		document.getElementById("unlockable").innerHTML = realContent;
-           document.getElementById("unlockable").classList.toggle("unlocked");
-				document.getElementById("frame").classList.toggle("paid");
-            document.getElementById("frame").innerHTML="<em>You can share this link to get your share of later payments: <a href='" + dataLink + "?ref=" + payment.userId + "'>" +  dataLink + "</a></em>";
-            document.getElementById("counter").innerHTML="";
-				document.getElementById("mbutton").innerHTML="";
+    function unlockContent2(payment) {
+        		document.getElementById("unlockable2").innerHTML = realContent2;
+            document.getElementById("unlockable2").classList.toggle("unlocked");
+				document.getElementById("frame2").classList.toggle("paid");
+            document.getElementById("frame2").innerHTML="<em>You can share this link to get your share of later payments: <a href='" + dataLink + "?ref=" + payment.userId + "'>" +  dataLink + "</a></em>";
+            document.getElementById("counter2").innerHTML="";
+				document.getElementById("mbutton2").innerHTML="";
     }
     </script>
-    <div id="unlockable">
-		<?= $blackenedContent ?>
+    <div id="unlockable2">
+		<?= $blackenedContent2 ?>
     </div>	
-    <div class='money-button' id='tbutton'></div>
+    <!--<div class='money-button' id='tbutton'></div>-->
 	<?php	
 	return ob_get_clean();
 }
