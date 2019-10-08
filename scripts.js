@@ -18,7 +18,7 @@ function getAddress(object) {
   					}			
   					if (k == 1 && p == 0) {
   						for (let i=0;i<payload.length;i++) {
-  							console.log("load button " +  i);
+  							console.log("load buttons " +  i);
 							loadButton(payload[i]);    	
 							p = 1;
     					}	
@@ -32,6 +32,7 @@ function getAddress(object) {
   				console.log("no paymail detected");
 				if (k == 1 && p == 0) {
 	  				for (let i=0;i<payload.length;i++) {
+	  					console.log("load buttons " +  i);
 						loadButton(payload[i]); 
 						p = 1;   	
     				}	
@@ -81,11 +82,14 @@ function querryPlanaria(object) {
     		}				
     	}
     	}
-		if (typeof results !== "undefined" && results.length > 0) {		
+		if (typeof results !== "undefined" && results.length > 0) {	
+			console.log(results.length);	
 			console.log("might have partners");
 			tips = 0;
-			buys = 0;		
+			buys = 0;	
+			buys2 = 0;	
 			for (let j=0; j<results.length; j++) {
+				console.log(results[j].out[0].s2);
 				if (results[j].out[0].s2 == "100201") {
 					console.log("spotted former tip");
 					tips = tips + 1;			
@@ -94,6 +98,10 @@ function querryPlanaria(object) {
 					console.log("spotted former pay");
 					buys = buys + 1;			
 				}	
+				if (results[j].out[0].s2 == "100102") {
+					console.log("spotted former pay -- 2");
+					buys2 = buys2 + 1;			
+				}	
 			}    	
     		for (let n=0; n<payload.length; n++) {
 				if (payload[n]["paywall"] == "yes") {
@@ -101,7 +109,10 @@ function querryPlanaria(object) {
 				} 
 				if (payload[n]["tip"] == "yes") {
 					payload[n]["number"] = tips;			
-				}    	
+				}
+				if (payload[n]["paywall2"] == "yes") {
+					payload[n]["number"] = buys2;			
+				}        	
     		}
 			if (payload[0].sharing > 0) {
 				for (n=0; n<payload.length; n++) {
@@ -178,25 +189,30 @@ function loadButton(word) {
 	console.log("show object");
 	console.log(object);
 	console.log("type " + object.typenumber);
-	if (object.typenumber == "100101") {
-		paywallreturn = object.returndata;	
-			document.getElementById("counter").innerHTML = object.number + " people have bought this article.";
-	}
-	if (object.typenumber == "100201") {
-		tipreturn = object.returndata;
-			document.getElementById("counter").innerHTML = object.number + " people have tiped the author.";
-	}
 	if (object.paywall == "yes") {
-		skript = "handleSuccessfulPayment(payment)";	
+		skript = "handleSuccessfulPayment1(payment)";	
 		paymentLabel = "Buy";
-		element = "mbutton";
+		element = "mbutton1";
+		console.log(element);
+		document.getElementById("counter1").innerHTML = object.number + " people have bought this article.";
+		paywallreturn1 = object.returndata;		
 	}
 	if (object.tip == "yes") {
 		skript = "handleSuccessfulTip(payment)";
 		paymentLabel = "Tip";
 		element = "tbutton";	
+		console.log(element);
+		document.getElementById("counterTips").innerHTML = object.number + " people have tiped the author.";
+		tipreturn = object.returndata;
 	}
-	
+	if (object.paywall2 == "yes") {
+		skript = "handleSuccessfulPayment2(payment)";	
+		paymentLabel = "Buy";
+		element = "mbutton2";
+		console.log(element);
+		document.getElementById("counter2").innerHTML = object.number + " people have bought this article.";
+		paywallreturn2 = object.returndata;
+	}
 	if (typeof object["refID"] !== "undefined") {
 		object.refAmount = object.amount * object.ref;
 	}		
@@ -296,12 +312,22 @@ function loadButton(word) {
 		outputs: outPuts,
 		label: paymentLabel,
    	onPayment: function (payment) { 
-			if (typeof paywallreturn != undefined && payment.paymentOutputs[0].script == paywallreturn) {
-				handleSuccessfulPayment(payment);										
-			}                 		
-         if (typeof tipreturn != undefined && payment.paymentOutputs[0].script == tipreturn) {
+ 		  	console.log(payment.paymentOutputs[0].script);
+			if (typeof paywallreturn1 != undefined) {
+				if (payment.paymentOutputs[0].script == paywallreturn1) {
+					handleSuccessfulPayment1(payment);										
+				}
+			}		                 		
+         if (typeof tipreturn != undefined) {
+          	if (payment.paymentOutputs[0].script == tipreturn) {
               handleSuccessfulTip(payment);
+     			}
      		}
+     		if (typeof paywallreturn2 != undefined) {
+				if (payment.paymentOutputs[0].script == paywallreturn2) {
+					handleSuccessfulPayment2(payment);										
+				}
+			}	
      	},  	           
       onError: function (arg) { console.log('onError', arg) }
    }
