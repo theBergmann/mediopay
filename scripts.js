@@ -2,23 +2,16 @@
 
 function getAddress(object) {
 	payload = object;
-	console.log("getAddress");
-	console.log(payload[0]["to"]);
+	console.log(payload);
 	if (payload[0]["to"].includes("@")) {
-				console.log("paymail");
 				fetch("https://api.polynym.io/getAddress/" + theAddress).then(function(r) {
   					return r.json()
   				}).then(function(r) {
-  					console.log("got address" + payload[0].to);
-  					console.log(payload.length);
-					for (let i=0; i<payload.length; i++) {	
-						console.log(i);	  					  						
+					for (let i=0; i<payload.length; i++) {					  						
   						payload[i]["to"] = r.address;
-						console.log("to " + payload[i].to)
   					}			
   					if (k == 1 && p == 0) {
   						for (let i=0;i<payload.length;i++) {
-  							console.log("load buttons " +  i);
 							loadButton(payload[i]);    	
 							p = 1;
     					}	
@@ -29,10 +22,8 @@ function getAddress(object) {
   				})	
   			}
   			else {
-  				console.log("no paymail detected");
 				if (k == 1 && p == 0) {
 	  				for (let i=0;i<payload.length;i++) {
-	  					console.log("load buttons " +  i);
 						loadButton(payload[i]); 
 						p = 1;   	
     				}	
@@ -47,8 +38,6 @@ function getAddress(object) {
 
 function querryPlanaria(object) {
 	payload = object;
-	console.log("here we are!");
-	console.log(payload);
 	 var query = {
      		 "v": 3,
       	 "q": {
@@ -66,15 +55,10 @@ function querryPlanaria(object) {
 	var header = {
   		headers: { key: "1CN88CMwB8wAVeoX2zm9CCZE4ZrrHDjZL5" }
 	};
-	console.log("ask Planaria");
 	fetch(url, header).then(function(r) {
   		return r.json()
 	}).then(function(r) {
     	results = r.c.concat(r.u);
-    	console.log("Here we go");
-    	//console.log(results);
-    	console.log("R-length: ")
-    	console.log(results.length);
     	if (typeof results[0] !== "undefined") {
     	if (typeof results[0].out[0].s7 !== "undefined") {
 			for (let i=0;i<payload.length;i++) {
@@ -83,23 +67,17 @@ function querryPlanaria(object) {
     	}
     	}
 		if (typeof results !== "undefined" && results.length > 0) {	
-			console.log(results.length);	
-			console.log("might have partners");
 			tips = 0;
 			buys = 0;	
 			buys2 = 0;	
 			for (let j=0; j<results.length; j++) {
-				console.log(results[j].out[0].s2);
 				if (results[j].out[0].s2 == "100201") {
-					console.log("spotted former tip");
 					tips = tips + 1;			
 				}
 				if (results[j].out[0].s2 == "100101") {
-					console.log("spotted former pay");
 					buys = buys + 1;			
 				}	
 				if (results[j].out[0].s2 == "100102") {
-					console.log("spotted former pay -- 2");
 					buys2 = buys2 + 1;			
 				}	
 			}    	
@@ -126,7 +104,6 @@ function querryPlanaria(object) {
 				}			
 			}	    	
  			if (payload[0].sharing > 0.1 && results.length > 1 ) {
- 				console.log("second partner?");
 			 	for (n=0; n<payload.length; n++) {
 			 		if (typeof results[1].out[3] !== "undefined") {					
 						payload[n]["secondPartner"] = results[1].out[3].e.a;
@@ -172,7 +149,6 @@ function querryPlanaria(object) {
     	}
     	if (k == 1 && p == 0) {
 	  		for (let i=0;i<payload.length;i++) {
-	  			console.log("load button");
 				loadButton(payload[i]); 
 				p = 1;   	
     		}	
@@ -186,14 +162,10 @@ function querryPlanaria(object) {
 
 function loadButton(word) {
 	object = word;
-	console.log("show object");
-	console.log(object);
-	console.log("type " + object.typenumber);
 	if (object.paywall == "yes") {
 		skript = "handleSuccessfulPayment1(payment)";	
 		paymentLabel = "Buy";
 		element = "mbutton1";
-		console.log(element);
 		document.getElementById("counter1").innerHTML = object.number + " people have bought this article.";
 		paywallreturn1 = object.returndata;		
 	}
@@ -201,7 +173,6 @@ function loadButton(word) {
 		skript = "handleSuccessfulTip(payment)";
 		paymentLabel = "Tip";
 		element = "tbutton";	
-		console.log(element);
 		document.getElementById("counterTips").innerHTML = object.number + " people have tiped the author.";
 		tipreturn = object.returndata;
 	}
@@ -209,7 +180,6 @@ function loadButton(word) {
 		skript = "handleSuccessfulPayment2(payment)";	
 		paymentLabel = "Buy";
 		element = "mbutton2";
-		console.log(element);
 		document.getElementById("counter2").innerHTML = object.number + " people have bought this article.";
 		paywallreturn2 = object.returndata;
 	}
@@ -238,7 +208,6 @@ function loadButton(word) {
 		object.amount = object.amount * (1 - object.sharing - object.refAmount);
 	}	
 	else if (typeof object.firstPartner !== "undefined")  {
-		console.log("1 partner");
 		object.sharingamount1 = object.amount * object.sharing;		
 		object.amount = object.amount * (1 - object.sharing - object.refAmount);	
 	}	
@@ -251,7 +220,6 @@ function loadButton(word) {
 		}	
 	]	
 	if (typeof object.firstPartner !== "undefined")  {
-		console.log("one partner");
 		outPuts1st = {
 			to: object.firstPartner,
          currency: object.currency,
@@ -259,11 +227,7 @@ function loadButton(word) {
 		}	
 		outPuts.push(outPuts1st);
 	}
-	else {
-		console.log("no partner");
-	}	
 	if (typeof object.secondPartner !== "undefined")  {
-		console.log("2 partner");
 		outPuts2nd = {
 			to: object.secondPartner,
          currency: object.currency,
@@ -272,7 +236,6 @@ function loadButton(word) {
 		outPuts.push(outPuts2nd);
 	}
 	if (typeof object.thirdPartner !== "undefined")  {
-	console.log("3 partner");
 		outPuts3rd = {
 			to: object.thirdPartner,
          currency: object.currency,
@@ -281,7 +244,6 @@ function loadButton(word) {
 		outPuts.push(outPuts3rd);
 	}	
 	if (typeof object.fourthPartner !== "undefined")  {
-	console.log("4 partner");
 		outPuts4th = {
 			to: object.fourthPartner,
          currency: object.currency,
@@ -290,7 +252,6 @@ function loadButton(word) {
 		outPuts.push(outPuts4th);
 	}			
 	if (typeof object["refID"] !== "undefined") {
-	console.log("ref partner");
 		outPutsRef = {
 			to: object.refID,
          currency: object.currency,
@@ -312,7 +273,6 @@ function loadButton(word) {
 		outputs: outPuts,
 		label: paymentLabel,
    	onPayment: function (payment) { 
- 		  	console.log(payment.paymentOutputs[0].script);
 			if (typeof paywallreturn1 != undefined) {
 				if (payment.paymentOutputs[0].script == paywallreturn1) {
 					handleSuccessfulPayment1(payment);										
@@ -331,10 +291,7 @@ function loadButton(word) {
      	},  	           
       onError: function (arg) { console.log('onError', arg) }
    }
-	console.log(mbobject);
-	console.log("trying to load money button " + element);
 	const div = document.getElementById(element);
-	console.log(div);
    moneyButton.render(div,	mbobject);		   
  }
 
