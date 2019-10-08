@@ -2,8 +2,14 @@
 /*
  * Plugin Name: MedioPay
  * Description: This plugin allows PayWalls and Tip Button for Wordpress
+ * Version: 0.1
+ * Requires at least: 4.6
+ * Requires PHP: 7.2
  * Author: MedioPay
  * Author URI: https://mediopay.com
+ * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html 
+
  */
 
 // Activation of the Plugin: Create Database
@@ -189,7 +195,6 @@ function mediopay_option_page() {
 	<div id="url"></div>	
 	<script type="text/javascript" >
 		const thisURL = window.location.href;
-		console.log(thisURL);
 		document.getElementById("url").innerHTML = "<input type='hidden' name='thisURL' value='" + thisURL + "' />";
 	</script>
    <input type="submit" class="button button-primary" value='save' />
@@ -293,7 +298,6 @@ if(isset($_POST['address']) OR isset($_POST['currency']) OR isset($_POST['deacti
 		echo "<script>thisURL='" . $thisURL . "';</script>";
 		//echo $thisURL;
 	}
-	echo "<script>console.log('this URL');</script>";
 	echo "<script>location.replace(thisURL);</script>";
 }
 
@@ -409,6 +413,7 @@ function wpdev_before_after($post_content) {
 		$refID = $_GET["ref"];
 		echo "<script>refID='" . $refID . "';</script>";
 	}
+	
 	$actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 	$mypost_id = url_to_postid($actual_link);
 	global $wpdb;		
@@ -449,12 +454,21 @@ function wpdev_before_after($post_content) {
 			$meta_thankyou = $current_thankyou;	
 		}
 	}
-	if ( shortcode_exists( 'paywall' ) ) {
+	$shortcode = "no";
+	/*if ( shortcode_exists( 'paywall' ) ) {
      $shortcode = "yes";
      echo "<script>shortCode='" . $shortcode . "';</script>";
-	}	
+	}*/
+	if ( has_shortcode( $post_content, 'paywall' )) {
+		 echo "<script>console.log('content has shortcode');</script>";	
+		 $shortcode = "yes";
+	}
+	else {
+		echo "<script>console.log('no shortcode in content');</script>";		
+	}
+	echo "<script>shortCode='" . $shortcode . "';</script>";
 	
-	echo "<script>thankYou=\"" . $meta_thankyou . "\";console.log('thankYou'); console.log(thankYou)</script>";
+	echo "<script>thankYou=\"" . $meta_thankyou . "\";</script>";
 	echo "<script>theAddress='" . $address . "';</script>";
 	echo "<script>theCurrency='" . $currency . "';</script>";
 	echo "<script>sharingQuota='" . $current_sharing . "';</script>";
@@ -478,7 +492,7 @@ function wpdev_before_after($post_content) {
 	$dataContent = wp_strip_all_tags( $dataContent );
 	echo "<script>dataContent=\"" . $dataContent . "\";</script>";
 	echo "<script>dataLink=\"" . get_permalink() . "\";</script>";
-	echo "<script>dataTitle=\"" . get_the_title() . "\";dataTitle = encodeURI(dataTitle); console.log(dataTitle);</script>";
+	echo "<script>dataTitle=\"" . get_the_title() . "\";dataTitle = encodeURI(dataTitle); </script>";
 	echo "<script>paymentAmount=\"" . $meta_amount . "\";</script>";
 	echo "<script>checkBox=\"" . $meta_checkbox . "\";</script>";
 	echo "<script>tipAmount=\"" . $meta_tip_amount	 . "\";</script>";
@@ -542,7 +556,6 @@ function wpdev_before_after($post_content) {
 <!--<script src="/blog/wp-content/plugins/MedioPay/scripts.js"></script>-->
     <script>
 	// create Objects to pass to the money button creation script    
-	console.log("paywall with second edit");
 	secondEdit = "yes";
 	dataDomain = window.location.hostname;
 	dataURL = window.location.pathname;
@@ -576,7 +589,6 @@ function wpdev_before_after($post_content) {
     	 paymentLabel = "buy";
    }
    if (typeof realContent1 !== "undefined" && realContent1.length > 0) {
-   	console.log("by editor : " + dataTitle);
    	  var returndata = bsv.Script.buildDataOut(['1NYJFDJbcSS2xGhGcxYnQWoh4DAjydjfYU', "" + '100101', "" + dataTitle, "" + dataContent, "" + dataDomain, "" + dataURL, "" + sharingQuota, "" + refQuota]).toASM();
 		 	paywall = {
 			paywall: "yes",
@@ -603,11 +615,13 @@ function wpdev_before_after($post_content) {
 	k = 0;
 	p = 0;
 
-	
+	console.log(paymentObjects);
 	// load functions with the objects
 	if (shortCode == "yes") {
+		console.log("shortcodes detected");
 	}
 	else {
+		console.log("pass object to script");
 		querryPlanaria(paymentObjects);
 		getAddress(paymentObjects);
 	}
@@ -616,8 +630,6 @@ function wpdev_before_after($post_content) {
 		
 	//var returndata = bsv.Script.buildDataOut(['1NYJFDJbcSS2xGhGcxYnQWoh4DAjydjfYU', "" + '100101', "" + dataTitle, "" + dataContent, "" + dataDomain, "" + dataURL]).toASM();		*/	
     function handleSuccessfulPayment1(payment) {
-    	console.log("got payment");
-        	console.log(payment);
          unlockContent1(payment);        
     }
     function handleFailedPayment1(error) {
@@ -632,8 +644,6 @@ function wpdev_before_after($post_content) {
 				document.getElementById("mbutton1").innerHTML="";
     }
 	 function handleSuccessfulTip(payment) {
-	 	console.log("ty " + thankYou);
-	 	console.log("tip successful");
 			document.getElementById("tbutton").innerHTML = thankYou;				 
 	 }    
     
@@ -653,6 +663,7 @@ add_shortcode( 'paywall', 'paywall_function' );
 
 //function cp_hb_shortcode_cb( $attr, $content ) {
 function paywall_function( $attr, $content) {
+	echo "<script>console.log('create paywall with shortcode');</script>";
 	ob_start();
 	global $wpdb;
 	$actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
@@ -724,7 +735,7 @@ function paywall_function( $attr, $content) {
 	$dataContent = wp_strip_all_tags( $dataContent );
 	echo "<script>dataContent=\"" . $dataContent . "\";</script>";
 	echo "<script>dataLink=\"" . get_permalink() . "\";</script>";
-	echo "<script>dataTitle=\"" . get_the_title() . "\";dataTitle = encodeURI(dataTitle); console.log(dataTitle);</script>";
+	echo "<script>dataTitle=\"" . get_the_title() . "\";dataTitle = encodeURI(dataTitle); </script>";
 	if (isset($attr["amount"])){
 		echo "<script>paymentAmount=\"" . $attr["amount"] . "\";</script>";
 	}
@@ -775,12 +786,8 @@ function paywall_function( $attr, $content) {
         
     </style>   
     <script>
-   console.log("paywall with shortcode");
-	console.log(window.location.hostname);  
-	console.log(window.location.pathname);
 	dataDomain = window.location.hostname;
 	dataURL = window.location.pathname;
-	console.log("by shortcode : " + dataTitle);
 	var returndata = bsv.Script.buildDataOut(['1NYJFDJbcSS2xGhGcxYnQWoh4DAjydjfYU', "" + '100102', "" + dataTitle, "" + dataContent, "" + dataDomain, "" + dataURL, "" + sharingQuota, "" + refQuota]).toASM();
 	paywall2 = {
 				paywall2: "yes",
@@ -804,41 +811,12 @@ function paywall_function( $attr, $content) {
    }
    paymentObjects.push(paywall2);
    
-	/*
-	if (checkBox == "yes") {
-    	  var returndata = bsv.Script.buildDataOut(['1NYJFDJbcSS2xGhGcxYnQWoh4DAjydjfYU', "" + '100201', "" + dataTitle, "" + dataContent, "" + dataDomain, "" + dataURL, "" + sharingQuota, "" + refQuota]).toASM();
-    	  paymentLabel = "tip";
-    	  tip = {
-			 tip: "yes",
-			 paywall: "no",
-			 typenumber: "100201",
-			 title: dataTitle,
-			 amount: tipAmount,
-			 baseurl: dataDomain,
-			 path: dataURL,
-			 ref: refQuota,
-			 sharing: sharingQuota,
-			 nometanet: nometanet,
-			 to: theAddress,
-			 returndata: returndata,
-			 outputs: 1,
-			 currency: theCurrency    	  
-    	  }
-    	  if (typeof refID !== "undefined") {
-			 tip.refID = refID;    	 
-			 tip.outputs = 2;   
-    	  }
-    	  paymentObjects.push(tip);
-	 }   */
-   console.log(paymentObjects);
 
 	k = 0;
 	p = 0;
 	querryPlanaria(paymentObjects);
 	getAddress(paymentObjects);
 	function handleSuccessfulPayment2(payment) {
-			console.log("got another payment");
-        	console.log(payment);
          unlockContent2(payment);
             
     }
