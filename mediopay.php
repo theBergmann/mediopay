@@ -12,8 +12,16 @@
 
  */
 
-// Activation of the Plugin: Create Database
+// Activation, Deactivation, Uninstall
+register_uninstall_hook( 'MedioPay/mediopay.ph', 'uninstall_mediopay' );
 
+function uninstall_mediopay() {
+	 global $wpdb;
+    $table_name = $wpdb->prefix . "mediopay";
+     $sql = "DROP TABLE IF EXISTS $table_name;";
+     $wpdb->query($sql);
+     delete_option("my_plugin_db_version");
+}	
 
 register_deactivation_hook( 'MedioPay/mediopay.php', 'mediopaydeactivate' );
 
@@ -106,27 +114,33 @@ function mediopay_option_page() {
 	<p>This options are required to use MedioPay.</p>	
 	 <?php
 	global $wpdb;
+	echo $wpdb->dbname;
+	echo "<script>console.log('this is " . $wpdb->prefix . "');</script>";
 	$table_name = $wpdb->prefix . 'mediopay';
-	$myrows = $wpdb->get_results( "SELECT address FROM wp_mediopay WHERE id = 1" );
+	echo "<script>console.log('this is " . $table_name . "');</script>";
+	$myrows = $wpdb->get_results( "SELECT address FROM " . $table_name . " WHERE id = 1" );
 	$currentaddress = $myrows[0]->address;
-	$myrows = $wpdb->get_results( "SELECT currency FROM wp_mediopay WHERE id = 1" );
+     echo "<script>console.log('this is " . $currentaddress . "');</script>";
+	$myrows = $wpdb->get_results( "SELECT currency FROM " . $table_name . " WHERE id = 1" );
 	$currentcurrency = $myrows[0]->currency; 
-	$myrows = $wpdb->get_results( "SELECT fixedAmount FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT fixedAmount FROM " . $table_name . " WHERE id = 1" ); 
 	$current_fixedAmount = $myrows[0]->fixedAmount;
-	$myrows = $wpdb->get_results( "SELECT sharingQuote FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT sharingQuote FROM " . $table_name . " WHERE id = 1" ); 
 	$current_sharing = $myrows[0]->sharingQuote;
-	$myrows = $wpdb->get_results( "SELECT ref FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT ref FROM " . $table_name . " WHERE id = 1" ); 
 	$current_ref = $myrows[0]->ref;
-	$myrows = $wpdb->get_results( "SELECT noMetanet FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT noMetanet FROM " . $table_name . " WHERE id = 1" ); 
 	$current_metanet = $myrows[0]->noMetanet;
-	$myrows = $wpdb->get_results( "SELECT fixedTipAmount FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT fixedTipAmount FROM " . $table_name . " WHERE id = 1" ); 
 	$current_tip_amount = $myrows[0]->fixedTipAmount;
-	$myrows = $wpdb->get_results( "SELECT fixedThankYou FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT fixedThankYou FROM " . $table_name . " WHERE id = 1" ); 
 	$current_thankyou = $myrows[0]->fixedThankYou;
-	$myrows = $wpdb->get_results( "SELECT noEditField FROM wp_mediopay WHERE id = 1" );
+	$myrows = $wpdb->get_results( "SELECT noEditField FROM " . $table_name . " WHERE id = 1" );
 	$current_edit = $myrows[0]->noEditField;    
 	$path = plugin_dir_url( 'mediopay.php');
 	$path = $path . "MedioPay/mediopay.php";
+	echo "<script>console.log('" . $path . "');</script>";
+	
    ?>
    Set your BitCoin address, your MoneyButton ID or your PayMail address<br />   
     	<form name='setmediopay' method='post' action=" <?php esc_url( $_SERVER['REQUEST_URI'] ) ?>">
@@ -205,6 +219,7 @@ function mediopay_option_page() {
 // save the settings
 
 if(isset($_POST['address']) OR isset($_POST['currency']) OR isset($_POST['deactivate_metadata']) OR isset($_POST['sharing_quote']) OR isset($_POST['ref_quote']) OR isset($_POST['fixed_amount']) OR isset($_POST['fixed_amount_tips']) OR isset($_POST['fixed_thank_you'])) {
+    echo "<script>console.log('trying to save');</script>";
 	if(isset($_POST['address'])) {		
 		$newaddress = $_POST["address"];
 		global $wpdb;
@@ -307,7 +322,8 @@ if(isset($_POST['address']) OR isset($_POST['currency']) OR isset($_POST['deacti
 
 function mediopay_custom_meta_paidcontent() {
 	global $wpdb;
-	$myrows = $wpdb->get_results( "SELECT noEditField FROM wp_mediopay WHERE id = 1" ); 
+	$table_name = $wpdb->prefix . 'mediopay';
+	$myrows = $wpdb->get_results( "SELECT noEditField FROM " . $table_name . " WHERE id = 1" ); 
 	$current_edit = $myrows[0]->noEditField;
 	if (isset($current_edit) && $current_edit == "yes") {
 	} 
@@ -333,7 +349,8 @@ function mediopay_meta_callback_paidcontent( $post ) {
 	 //$content = var_dump($mediopay_stored_meta);	
 	 //$content = var_dump($post); 
 	 global $wpdb;
-	 $myrows = $wpdb->get_results( "SELECT currency FROM wp_mediopay WHERE id = 1" );
+	 $table_name = $wpdb->prefix . 'mediopay';
+	 $myrows = $wpdb->get_results( "SELECT currency FROM " . $table_name . " WHERE id = 1" );
 	 $currency = $myrows[0]->currency;	 
 	 ?>
 	 
@@ -348,7 +365,8 @@ function mediopay_meta_callback_tips( $post ) {
     wp_nonce_field( basename( __FILE__ ), 'mediopay_nonce' );
     $mediopay_stored_meta = get_post_meta( $post->ID );
     global $wpdb;
-	 $myrows = $wpdb->get_results( "SELECT currency FROM wp_mediopay WHERE id = 1" );
+    $table_name = $wpdb->prefix;
+	 $myrows = $wpdb->get_results( "SELECT currency FROM " . $table_name . " WHERE id = 1" );
 	 $currency = $myrows[0]->currency;	
     ?>
     <p>
@@ -416,28 +434,29 @@ function wpdev_before_after($post_content) {
 	
 	$actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 	$mypost_id = url_to_postid($actual_link);
-	global $wpdb;		
+	global $wpdb;
+	$table_name = $wpdb->prefix;
 	$meta_paidcontent = get_post_meta( $mypost_id, 'meta-paidcontent', true );
 	$meta_checkbox = get_post_meta( $mypost_id, 'meta-checkbox', true );
 	$meta_thankyou = get_post_meta( $mypost_id, 'meta-textarea', true );		
 	$meta_amount  = get_post_meta( $mypost_id, 'meta-amount', true );
 	$meta_tip_amount  = get_post_meta( $mypost_id, 'meta-tipAmount', true );
 	$table_name = $wpdb->prefix . 'mediopay';
-	$myrows = $wpdb->get_results( "SELECT address FROM wp_mediopay WHERE id = 1" );
+	$myrows = $wpdb->get_results( "SELECT address FROM " . $table_name . " WHERE id = 1" );
 	$address = $myrows[0]->address;
-	$myrows = $wpdb->get_results( "SELECT currency FROM wp_mediopay WHERE id = 1" );
+	$myrows = $wpdb->get_results( "SELECT currency FROM " . $table_name . " WHERE id = 1" );
 	$currency = $myrows[0]->currency;  
-	$myrows = $wpdb->get_results( "SELECT fixedAmount FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT fixedAmount FROM " . $table_name . " WHERE id = 1" ); 
 	$current_fixedAmount = $myrows[0]->fixedAmount;
-	$myrows = $wpdb->get_results( "SELECT sharingQuote FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT sharingQuote FROM " . $table_name . " WHERE id = 1" ); 
 	$current_sharing = $myrows[0]->sharingQuote;
-	$myrows = $wpdb->get_results( "SELECT ref FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT ref FROM " . $table_name . " WHERE id = 1" ); 
 	$current_ref = $myrows[0]->ref;
-	$myrows = $wpdb->get_results( "SELECT noMetanet FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT noMetanet FROM " . $table_name . " WHERE id = 1" ); 
 	$current_metanet = $myrows[0]->noMetanet;
-	$myrows = $wpdb->get_results( "SELECT fixedTipAmount FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT fixedTipAmount FROM " . $table_name . " WHERE id = 1" ); 
 	$current_tip_amount = $myrows[0]->fixedTipAmount;
-	$myrows = $wpdb->get_results( "SELECT fixedThankYou FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT fixedThankYou FROM " . $table_name . " WHERE id = 1" ); 
 	$current_thankyou = $myrows[0]->fixedThankYou;    
 	
 	if (!isset($meta_amount) OR $meta_amount == 0) {
@@ -482,7 +501,8 @@ function wpdev_before_after($post_content) {
 	$realContent1 =  json_encode($realContent1);
 	$blackenedContent1 = "";	
 	for ($i=0; $i<$lengthContent; $i++) {
-			$blackenedContent1 .=	"<span style='background-color:#7B7878'>&nbsp;</span>" ;		
+			$blackenedContent1 .=	"<span style='background-color:#fb9868'>&nbsp;</span>" ;	
+			// #7B7878	
 	}	
 	echo "<script>realContent1=" . $realContent1 . ";</script>";
 	echo "<script>lengthText1=\"" . $lengthContent . "\";</script>";
@@ -666,6 +686,7 @@ function paywall_function( $attr, $content) {
 	echo "<script>console.log('create paywall with shortcode');</script>";
 	ob_start();
 	global $wpdb;
+	$table_name = $wpdb->prefix;
 	$actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 	$mypost_id = url_to_postid($actual_link);
 	$meta_paidcontent = get_post_meta( $mypost_id, 'meta-paidcontent', true );
@@ -674,21 +695,21 @@ function paywall_function( $attr, $content) {
 	$meta_amount  = get_post_meta( $mypost_id, 'meta-amount', true );
 	$meta_tip_amount  = get_post_meta( $mypost_id, 'meta-tipAmount', true );
 	$table_name = $wpdb->prefix . 'mediopay';	
-	$myrows = $wpdb->get_results( "SELECT address FROM wp_mediopay WHERE id = 1" );
+	$myrows = $wpdb->get_results( "SELECT address FROM " . $table_name . " WHERE = 1" );
 	$address = $myrows[0]->address;
-	$myrows = $wpdb->get_results( "SELECT currency FROM wp_mediopay WHERE id = 1" );
+	$myrows = $wpdb->get_results( "SELECT currency FROM " . $table_name . " WHERE id = 1" );
 	$currency = $myrows[0]->currency;  
-	$myrows = $wpdb->get_results( "SELECT fixedAmount FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT fixedAmount FROM " . $table_name . " WHERE id = 1" ); 
 	$current_fixedAmount = $myrows[0]->fixedAmount;
-	$myrows = $wpdb->get_results( "SELECT sharingQuote FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT sharingQuote FROM " . $table_name . " WHERE id = 1" ); 
 	$current_sharing = $myrows[0]->sharingQuote;
-	$myrows = $wpdb->get_results( "SELECT ref FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT ref FROM " . $table_name . " WHERE id = 1" ); 
 	$current_ref = $myrows[0]->ref;
-	$myrows = $wpdb->get_results( "SELECT noMetanet FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT noMetanet FROM " . $table_name . " WHERE id = 1" ); 
 	$current_metanet = $myrows[0]->noMetanet;
-	$myrows = $wpdb->get_results( "SELECT fixedTipAmount FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT fixedTipAmount FROM " . $table_name . " WHERE id = 1" ); 
 	$current_tip_amount = $myrows[0]->fixedTipAmount;
-	$myrows = $wpdb->get_results( "SELECT fixedThankYou FROM wp_mediopay WHERE id = 1" ); 
+	$myrows = $wpdb->get_results( "SELECT fixedThankYou FROM " . $table_name . " WHERE id = 1" ); 
 	$current_thankyou = $myrows[0]->fixedThankYou;    	
 	
 	if (!isset($meta_amount) OR $meta_amount == 0) {
