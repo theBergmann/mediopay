@@ -563,7 +563,9 @@ function mediopay_meta_callback_tips( $post ) {
             <?php _e( 'Checkbox label', 'mediopay-textdomain' )?>
             <?php _e( 'Add Button', 'mediopay-textdomain' )?>
             <br />Set an Amount<br />
-            <input type="number" step="0.01" name="meta-amount" id="meta-amount" value="<?php if ( isset ( $mediopay_stored_meta['meta-tipAmount'] ) ) echo $mediopay_stored_meta['meta-tipAmount'][0]; ?>" />            
+       </label>
+       <label for="meta-tipAmount">
+            <input type="number" step="0.01" name="meta-tipAmount" id="meta-tipAmount" value="<?php if ( isset ( $mediopay_stored_meta['meta-tipAmount'] ) ) echo $mediopay_stored_meta['meta-tipAmount'][0]; ?>" />            
         <?php echo "<b>" . $currency . "</b><br />" ?></label><br />
             Add a Thank You Message or Link<br />
             <input type="text" name="meta-textarea" id="meta-textarea"  value="<?php if ( isset ( $mediopay_stored_meta['meta-textarea'] ) ) echo $mediopay_stored_meta['meta-textarea'][0]; ?>" />
@@ -618,10 +620,8 @@ add_action( 'save_post', 'mediopay_meta_save' );
 function wpdev_before_after($post_content) {
    // $colorscheme = get_user_option( 'admin_color', get_current_user_id() );
 	// get all the data and transform it in JavaScript
-	if (isset($_GET["ref"])) {
-		$refID = $_GET["ref"];
-		echo "<script>refID='" . $refID . "';</script>";
-	}
+	$actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+	$mypost_id = url_to_postid($actual_link);
 	global $wpdb;
 	$table_name = $wpdb->prefix;
 	$meta_paidcontent = get_post_meta( $mypost_id, 'meta-paidcontent', true );
@@ -629,10 +629,16 @@ function wpdev_before_after($post_content) {
 	$meta_thankyou = get_post_meta( $mypost_id, 'meta-textarea', true );		
 	$meta_amount  = get_post_meta( $mypost_id, 'meta-amount', true );
 	$meta_tip_amount  = get_post_meta( $mypost_id, 'meta-tipAmount', true );
-	$actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-	$mypost_id = url_to_postid($actual_link);
+		
+	if ((isset($meta_paidcontent) AND (strlen($meta_paidcontent)) > 0) OR (isset($meta_checkbox)) AND (strlen($meta_checkbox)) > 0) {
+		
+		
+	if (isset($_GET["ref"])) {
+		$refID = $_GET["ref"];
+		echo "<script>refID='" . $refID . "';</script>";
+	}
 	
-	if (isset($meta_paidcontent) OR isset($meta_checkbox)) {
+
 	$table_name = $wpdb->prefix . 'mediopay';
 	$myrows = $wpdb->get_results( "SELECT address FROM " . $table_name . " WHERE id = 1" );
 	$address = $myrows[0]->address;
@@ -687,7 +693,7 @@ function wpdev_before_after($post_content) {
 	echo "<script>theCurrency='" . $currency . "';</script>";
 	echo "<script>sharingQuota='" . $current_sharing . "';</script>";
 	echo "<script>refQuota='" . $current_ref . "';</script>";
-	echo "<script>nometanet='" . $current_metanet . "';</script>";
+	echo "<script>nometanet='" . $current_metanet . "';console.log(nometanet)</script>";
 	echo "<script>barColor='" . $barColor . "';</script>";
 	
 	// create dummy content
@@ -695,8 +701,8 @@ function wpdev_before_after($post_content) {
 	$lengthContent = strlen($meta_paidcontent);
 	$realContent1 = $meta_paidcontent;
 	$realContent1 =  json_encode($realContent1);
-	$blackenedContent1 = "";	
-	for ($i=0; $i<$lengthContent; $i++) {
+	$blackenedContent1 = "<br />";	
+	for ($i=0; $i<($lengthContent/3*2); $i++) {
 	        if (is_integer($i / 10)) {
 	            $blackenedContent1 .= " ";
 	        }
@@ -718,13 +724,16 @@ function wpdev_before_after($post_content) {
 	if ($meta_paidcontent) {
 	   $fullcontent1 = $post_content . "<div id='frame1'><div class='money-button' id='mbutton1'></div><div id='counter1'></div></div><div id='unlockable1'>" . $blackenedContent1 . "</div>";
 	   if ($meta_checkbox == "yes");
-	   	$fullcontent1 = $fullcontent1 . "<div id='counterTips'></div><div class='money-button' id='tbutton'></div>";
+	   	$fullcontent1 = $fullcontent1 . "<div class='money-button' id='tbutton'></div><div id='counterTips'></div>";
+	   	echo "<script>console.log('meta-paid content + checbox');tipbuttr = document.getElementById('tbutton');console.log(tipbuttr);</script>";
 	}
 	else if ($meta_checkbox == "yes") {
-		$fullcontent1 = $post_content . "<div id='counterTips'></div><div class='money-button' id='tbutton'></div></div>";
+		$fullcontent1 = $post_content . "<div class='money-button' id='tbutton'></div><div id='counterTips'></div></div>";
+		echo "<script>console.log('only checkbox');</script>";
 	}
 	else {
-		$fullcontent1 = $post_content;	
+		$fullcontent1 = $post_content;
+		echo "<script>console.log('neither');</script>";	
 	}   
 	
 	$path = plugin_dir_url( 'mediopay.php');
@@ -760,14 +769,15 @@ function wpdev_before_after($post_content) {
         }
         #frame1 {
 				/*border-left:10px solid #4772F6;*/    
-				height:130px;
+				height:150px;
 				padding-left:10px;
         
         }
 		 #frame1.paid {
 				border-left:10px solid #4772F6;
-				height:80px;	 
-		 }        
+				height:150px;	 
+		 }  
+
         
     </style>   
 <script src="https://unpkg.com/bsv@0.30.0/bsv.min.js"></script>
@@ -858,12 +868,12 @@ function wpdev_before_after($post_content) {
         		document.getElementById("unlockable1").innerHTML = realContent1;
            document.getElementById("unlockable1").classList.toggle("unlocked");
 				document.getElementById("frame1").classList.toggle("paid");
-            document.getElementById("frame1").innerHTML="<em>You can share this link to get your share of later payments: <a href='" + dataLink + "?ref=" + payment.userId + "'>" +  dataLink + "</a></em>";
+            document.getElementById("frame1").innerHTML="<em>Share this link to get a share of later payments: <a href='" + dataLink + "?ref=" + payment.userId + "'>" +  dataLink + "</a></em><br />See the <a href='https://www.mediopay.com/value-list/'>Ranking of the most valuable posts</a>";
             document.getElementById("counter1").innerHTML="";
 				document.getElementById("mbutton1").innerHTML="";
     }
 	 function handleSuccessfulTip(payment) {
-			document.getElementById("tbutton").innerHTML = thankYou;				 
+			document.getElementById("tbutton").innerHTML = thankYou + "<br /><em>Share this link to get a share of later payments: <a href='" + dataLink + "?ref=" + payment.userId + "'>" +  dataLink + "</a></em><br />See the <a href='https://www.mediopay.com/value-list/'>Ranking of the most valuable posts</a>";				 
 	 }    
     
     </script>	
@@ -871,6 +881,11 @@ function wpdev_before_after($post_content) {
    return $fullcontent1;  
    
 }  
+else {
+     echo "<script>console.log('got it not');</script>";
+      echo "<script>console.log('" . $meta_paidcontent . "');</script>";
+    return $post_content;
+}
 }
      
 add_filter('the_content', 'wpdev_before_after');
@@ -940,8 +955,8 @@ function paywall_function( $attr, $content) {
 	$lengthContent = strlen($content);
 	$realContent2 = $content;
 	$realContent2 =  json_encode($realContent2);
-	$blackenedContent2 = "";	
-	for ($i=0; $i<$lengthContent; $i++) {
+	$blackenedContent2 = "<br />";	
+	for ($i=0; $i<($lengthContent/3*2); $i++) {
 	        if (is_integer($i / 10)) {
 	            $blackenedContent2 .= " ";
 	        }
@@ -1000,13 +1015,13 @@ function paywall_function( $attr, $content) {
         }
         #frame2 {
 				/*border-left:10px solid #4772F6;*/    
-				height:110px;
+				height:150px;
 				padding-left:10px;
         
         }
 		 #frame2.paid {
 				border-left:10px solid #4772F6;
-				height:80px;	 
+				height:150px;	 
 		 }        
         
     </style>   
@@ -1052,7 +1067,7 @@ function paywall_function( $attr, $content) {
         		document.getElementById("unlockable2").innerHTML = realContent2;
             document.getElementById("unlockable2").classList.toggle("unlocked");
 				document.getElementById("frame2").classList.toggle("paid");
-            document.getElementById("frame2").innerHTML="<em>You can share this link to get your share of later payments: <a href='" + dataLink + "?ref=" + payment.userId + "'>" +  dataLink + "</a></em>";
+            document.getElementById("frame2").innerHTML="<em>Share this link to get a share of later payments: <a href='" + dataLink + "?ref=" + payment.userId + "'>" +  dataLink + "</a></em><br />See the <a href='https://www.mediopay.com/value-list/'>Ranking of the most valuable posts</a>";
             document.getElementById("counter2").innerHTML="";
 				document.getElementById("mbutton2").innerHTML="";
     }
