@@ -699,16 +699,22 @@ function wpdev_before_after($post_content) {
 	// create dummy content
 	
 	$lengthContent = strlen($meta_paidcontent);
+	if ($lengthContent > 1000) {
+		$lengthContent = 1000;	
+	}
 	$realContent1 = $meta_paidcontent;
 	$realContent1 =  json_encode($realContent1);
-	$blackenedContent1 = "<br />";	
+	$blackenedContent1 = "<br /><span style='background-color:#". $barColor . "'>";
 	for ($i=0; $i<($lengthContent/3*2); $i++) {
 	        if (is_integer($i / 10)) {
 	            $blackenedContent1 .= " ";
 	        }
-			$blackenedContent1 .=	"<span style='background-color:#" . $barColor . "'>&nbsp;&nbsp; </span>" ;	
+			$blackenedContent1 .= "&nbsp;&nbsp;" ;	
 			// #7B7878	
 	}	
+	if (strlen($meta_paidcontent) > 0) {
+		$post_content .= "<em>" . strlen($meta_paidcontent) . " characters behind the paywall</em><br /><br />";
+	}
 	echo "<script>realContent1=" . $realContent1 . ";</script>";
 	echo "<script>lengthText1=\"" . $lengthContent . "\";</script>";
 	
@@ -745,19 +751,7 @@ function wpdev_before_after($post_content) {
    ?>
    <style>
         /* The CSS you'll need in your website */
-        #unlockable1 {
-            /*visibility: hidden;
-            opacity: 0;
-            transition: opacity 5s;*/
-            opacity:0.8;
-            color: #7B7878;
-    			text-shadow: 0 0 10px black,
-                 0 0 50px black,
-                 0 0 20px black,
-                 0 0 20px black,
-                 0 0 20px black,
-                 0 0 20px black;
-        }
+       
 
         #unlockable1.unlocked {
         		opacity:1;
@@ -769,15 +763,39 @@ function wpdev_before_after($post_content) {
         }
         #frame1 {
 				/*border-left:10px solid #4772F6;*/    
-				height:150px;
+				height:125px;
 				padding-left:10px;
         
         }
 		 #frame1.paid {
 				border-left:10px solid #4772F6;
-				height:150px;	 
+				height:125px;	 
 		 }  
-
+		#boxx, #box44 {
+			border: 1px solid #FB9868;
+			border-radius:8px;
+			padding:3px; 
+			background-color: #FFCEB5; 
+			width:120px;
+			margin-left:187px; 
+			margin-top:-70px;
+			text-align:right;
+		}
+		#box3, #box2, #box, #box4, #box6, #box5, #box2  {
+			font-size:14px;
+			font-family:sans-serif;
+			<!--border-left:6px solid #FFCEB5;-->
+			padding-left:4px;
+			margin-top:-15px;		
+		}
+		.icon {
+			font-size:30px;
+			font-weight: bold;		
+		}
+		
+		#tbutton {
+			margin-top:20px;		
+		}
         
     </style>   
 <script src="https://unpkg.com/bsv@0.30.0/bsv.min.js"></script>
@@ -930,6 +948,7 @@ function paywall_function( $attr, $content) {
 	$myrows = $wpdb->get_results( "SELECT barColor FROM " . $table_name . " WHERE id = 1" ); 
 	$barColor = $myrows[0]->barColor;
 	
+	
 	if (!isset($meta_amount) OR $meta_amount == 0) {
 		$meta_amount = $current_fixedAmount;	
 	}	
@@ -953,14 +972,18 @@ function paywall_function( $attr, $content) {
 	echo "<script>barColor='" . $barColor . "';</script>";
 	
 	$lengthContent = strlen($content);
+	if ($lengthContent > 1000) {
+		$lengthContent = 1000;	
+	}
 	$realContent2 = $content;
 	$realContent2 =  json_encode($realContent2);
-	$blackenedContent2 = "<br />";	
+	$blackenedContent2 = "<br /><span style='background-color:#". $barColor . "'>";
 	for ($i=0; $i<($lengthContent/3*2); $i++) {
 	        if (is_integer($i / 10)) {
 	            $blackenedContent2 .= " ";
 	        }
-			$blackenedContent2 .=	"<span style='background-color:#fb9868'>&nbsp;&nbsp; </span>" ;	
+			$blackenedContent2 .= "&nbsp;&nbsp;";	
+
 			// #7B7878	
 	}	
 	echo "<script>realContent2=" . $realContent2 . ";</script>";
@@ -985,6 +1008,9 @@ function paywall_function( $attr, $content) {
 	$path = $path . "MedioPay/scripts.js";
 	//echo "<script>scriptPath=\"" . $path . "\";</script>";
 	echo "<script src='" . $path . "'></script>";
+	if (strlen($content) > 0) {
+		echo "<em>" . strlen($content) . " characters behind the paywall</em><br /><br />";
+	}
 	?>
 	<div id="frame2">
 	<div class="money-button" id="mbutton2"></div>
@@ -994,7 +1020,7 @@ function paywall_function( $attr, $content) {
         #unlockable2 {
             /*visibility: hidden;
             opacity: 0;
-            transition: opacity 5s;*/
+            transition: opacity 5s;
             opacity:0.8;
             color: #7B7878;
     			text-shadow: 0 0 10px black,
@@ -1002,7 +1028,7 @@ function paywall_function( $attr, $content) {
                  0 0 20px black,
                  0 0 20px black,
                  0 0 20px black,
-                 0 0 20px black;
+                 0 0 20px black;*/
         }
 
         #unlockable2.unlocked {
@@ -1015,13 +1041,13 @@ function paywall_function( $attr, $content) {
         }
         #frame2 {
 				/*border-left:10px solid #4772F6;*/    
-				height:150px;
+				height:125px;
 				padding-left:10px;
         
         }
 		 #frame2.paid {
 				border-left:10px solid #4772F6;
-				height:150px;	 
+				height:125px;	 
 		 }        
         
     </style>   
