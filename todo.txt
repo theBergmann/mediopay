@@ -1,0 +1,144 @@
+There are issues with your plugin code.
+
+Please read this email in its entirety, address all listed issues, and reply to this email with your corrected code attached (or linked).
+
+Remember in addition to code quality, security and functionality, we require all plugins adhere to our guidelines. If you have not yet, please read them:
+
+* https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/
+
+You will not be able to submit another plugin while this one is being reviewed, so please read the email carefully. We know it can be long, but you must follow the directions at the end as not doing so will result in your review being delayed. It is required for you to read and reply to these emails, and failure to do so will result in significant delays with your plugin being accepted.
+
+
+
+## Calling files remotely 
+
+Offloading images, js, css, cgi, and other scripts to Google (or jquery.com or anywhere else frankly) is disallowed because you're introducing an unnecessary dependency on another site. If the file you're trying to use isn't a part of WordPress Core, then you should include it -locally- in your plugin, not remotely. If the file IS included in WordPress core, please call that instead.
+
+The one exception to this rule is if your plugin is performing a service. We will permit this on a case by case basis, however since this can be confusing, we have some examples of what are not permitted: 
+
+* Offloading jquery CSS files to Google - You should include the CSS in your plugin.
+* Inserting an iframe with a help doc - A link, or including the docs in your plugin is preferred.
+* Calling images from your own domain - They should be included in your plugin.
+
+Here are some examples of what we would permit: 
+
+* Calling font families from Google or their approved CDN (if GPL compatible) 
+* API calls back to your server to process possible spam comments (like Akismet) 
+* Offloading comments to your own servers (like Disqus)
+* oEmbed calls to a service provider (like Twitter or YouTube) 
+
+Please remove this dependency from your plugin and, if possible, include all files within the plugin (that is not called remotely). If instead you feel you ARE providing a service, please re-write your readme.txt in a manner that explains the service, the servers being called, and if any account is needed to connect.
+
+Some examples from your plugin:
+
+MedioPay/mediopay.php:799:<script src="https://unpkg.com/bsv@0.30.0/bsv.min.js"></script>
+
+
+ok
+
+
+
+
+
+
+## Please use wp_enqueue commands 
+
+Your plugin is not correctly including JS and/or CSS. You should be using the built in functions for this: 
+
+https://developer.wordpress.org/reference/functions/wp_enqueue_script/
+https://developer.wordpress.org/reference/functions/wp_enqueue_style/ 
+
+And remember you can use this function to add inline javascript:
+
+https://developer.wordpress.org/reference/functions/wp_add_inline_script/
+
+If you're trying to enqueue on the admin pages you'll want to use the admin enqueues 
+
+https://developer.wordpress.org/reference/hooks/admin_enqueue_scripts/
+https://developer.wordpress.org/reference/hooks/admin_print_scripts/
+https://developer.wordpress.org/reference/hooks/admin_print_styles/
+
+→ Das muss ich üben. Am besten mit einem anderen, jungfräulichen Plugin (einfach über Shortcodes).
+
+
+
+
+
+## Please sanitize, escape, and validate your POST calls 
+
+When you include POST/GET/REQUEST/FILE calls in your plugin, it's important to sanitize, validate, and escape them. The goal here is to prevent a user from accidentally sending trash data through the system, as well as protecting them from potential security issues. 
+
+SANITIZE: Data that is input (either by a user or automatically) must be sanitized. This lessens the possibility of XSS vulnerabilities and MITM attacks where posted data is subverted.
+
+VALIDATE: All data should be validated as much as possible. Even when you sanitize, remember that you don’t want someone putting in ‘dog’ when the only valid values are numbers.
+
+ESCAPE: Data that is output must be escaped properly, so it can't hijack admin screens. There are many esc_*() functions you can use to make sure you don't show people the wrong data. 
+
+To help you with this, WordPress comes with a number of sanitization and escaping functions. You can read about those here: 
+
+* https://developer.wordpress.org/plugins/security/securing-input/
+* https://developer.wordpress.org/plugins/security/securing-output/
+
+Remember: You must use the MOST appropriate functions for the context. If you’re sanitizing email, use sanitize_email(), if you’re outputting HTML, use esc_html(), and so on.
+
+Clean everything, check everything, escape everything, and never trust the users to always have input sane data. 
+
+Some examples from your plugin:
+
+MedioPay/mediopay.php:592: update_post_meta( $post_id, 'meta-checkbox', $_POST[ 'meta-checkbox' ] );
+MedioPay/mediopay.php:481: $newedit = $_POST["bar_color"];
+
+→ überschaubar, aber viele Optionen. Anschauen, üben.
+
+
+
+
+## Generic function (and/or define) names 
+
+All plugins must have unique function names, namespaces, defines, and classnames. This prevents your plugin from conflicting with other plugins or themes. We need you to update your plugin to use more unique and distinct names.
+
+A good way to do this is with a prefix. For example, if your plugin is called "Easy Custom Post Types" then you could use names like these:
+
+function ecpt_save_post()
+define( ‘ECPT_LICENSE’, true );
+class ECPT_Admin{}
+namespace EasyCustomPostTypes;
+
+Don't try to use two letter slugs anymore. We have over 60 THOUSAND plugins on WordPress.org alone, you’re going to run into conflicts. 
+
+Similarly, don't use __ (double underscores), wp_ , or _ (single underscore) as a prefix. Those are reserved for WordPress itself. You can use them inside your classes, but not as stand-alone function.
+
+Remember: Good names are unique and distinct. This will help you and the next person in debugging, as well as prevent conflicts.
+
+Some examples from your plugin:
+
+MedioPay/mediopay.php:620:function wpdev_before_after($post_content) {
+
+MedioPay/mediopay.php:218:function changeColor() {
+
+
+Seite durchsuchen, Codes ändern
+
+
+
+
+
+
+
+
+Please make sure you've addressed all issues brought up in this email. There is no timeframe on this review, however if we have no response from this email address in 6 months, we will reject this submission. To keep your review active, all we ask is that you make corrections and reply. 
+
+When you've corrected your code, REPLY to this email with the updated code attached as a zip, or provide a link to the new code for us to review. If you use gmail, you won’t be able to send a ZIP file if it contains any JS files (yes, we know it’s stupid, blame Google).
+
+If you have questions, concerns, or need clarification, please reply to this email and just ask us.
+
+(While we have tried to make this review as exhaustive as possible we, like you, are humans and may have missed things. As such, we will re-review the ENTIRE plugin when you send it back to us. We appreciate your patience and understanding in this.) 
+
+
+--
+WordPress Plugin Review Team | plugins@wordpress.org
+https://make.wordpress.org/plugins/ 
+https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/ 
+{#HS:990057599-53579#}  
+
+
