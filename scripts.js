@@ -195,19 +195,34 @@ function loadButton(word) {
 	if (object.tip == "yes") {
 		wording = "tip";
 	}	
-	numbercountformat1 = "<br /><span id='box' onclick='expandInfo(\"box\", " + object.amount + ")' >"
-	numbercountformat2 = "<br /><span id='box3' onclick='expandInfo(\"box3\", " + object.amount + ")'>"
-	numbercountformat3 = "<br /><span id='box4' onclick='expandInfo(\"box4\", " + object.amount + ")'>"
+	numbercountformat1 = "<span id='box' onclick='expandInfo(\"box\", " + object.amount + ")' onmouseover='expandInfo(\"box\", " + object.amount + ")' style='margin-top:-50px' >"
+	numbercountformat2 = "<span id='box3' onclick='expandInfo(\"box3\", " + object.amount + ")' onmouseover='expandInfo(\"box3\", " + object.amount + ")'>"
+	numbercountformat3 = "<span id='box4' onclick='expandInfo(\"box4\", " + object.amount + ")' onmouseover='expandInfo(\"box4\", " + object.amount + ")'>"
 
 		
 	numbercountTips = numbercountformat2 + "<span class='icon'>&#10084;</span> " + object.number;
 	//console.log(numbercount);	
 	if ((object.sharing * 10) > object.number) {
+		switch (object.number) {
+			case(0):
+				shareQuote = object.sharing*100;
+				break;
+			case(1):
+				shareQuote = object.sharing * 50;
+				break;
+			case(2):
+				shareQuote = object.sharing * 30;
+				break;
+			case(3):
+				shareQuote = object.sharing * 20;
+				break;		
+		}		
+		
 		console.log("chance to share!");	
-		sharingWord1 = "&nbsp;&nbsp;&nbsp;&nbsp;<span id='box2' onclick='expandInfo2(\"box2\")'><span class='icon'>&cent;</span> income share";
+		sharingWord1 = "&nbsp;&nbsp;&nbsp;&nbsp;<span id='box2' onclick='expandInfo2(\"box2\")' onmouseover='expandInfo2(\"box2\")'><span class='icon'>&cent;</span> " + shareQuote + "%";
 		console.log(sharingWord1);		
-		sharingWord2 = "&nbsp;&nbsp;&nbsp;&nbsp;<span id='box5' onclick='expandInfo2(\"box5\")'><span class='icon'>&cent;</span> income share";
-		sharingWord3 = "&nbsp;&nbsp;&nbsp;&nbsp;<span id='box6' onclick='expandInfo2(\"box6\")'><span class='icon'>&cent;</span> income share";
+		sharingWord2 = "&nbsp;&nbsp;&nbsp;&nbsp;<span id='box5' onclick='expandInfo2(\"box5\")' onmouseover='expandInfo2(\"box5\")'><span class='icon'>&cent;</span> " + shareQuote + "%";
+		sharingWord3 = "&nbsp;&nbsp;&nbsp;&nbsp;<span id='box6' onclick='expandInfo2(\"box6\")'  onmouseover='expandInfo2(\"box6\")'><span class='icon'>&cent;</span> " + shareQuote + "%";
 		console.log(sharingWord3);
 		console.log(sharingWord2);					
 	}
@@ -221,17 +236,22 @@ function loadButton(word) {
 		paymentLabel = "Buy";
 		element = "mbutton1";
 		if (typeof buys !== "undefined") {
-			if (object.nometanet !== "yes") {
-				document.getElementById("counter1").innerHTML = numbercountformat1 + "<span class='icon'>&#128591;</span>" + buys + " buyers </span>" + sharingWord1 + "</span>";
+			if (object.nometanet !== "yes" && buys !== 0) {
+				document.getElementById("counter1").innerHTML = numbercountformat1 + "<span class='icon'>&#x1F48E;</span>" + buys + "</span>" + sharingWord1 + "</span>";
 		   }		
+		   else {
+		   	document.getElementById("counter1").innerHTML = numbercountformat1 + "<span class='icon'>&#x1F644;</span>" + buys + "</span>" + sharingWord1 + "</span>";							
+
+		   }
 		}
 		else {
 			console.log("share me " + sharingWord3 + sharingWord1);
-			document.getElementById("counter1").innerHTML = numbercountformat1 + "  <span class='icon'>&#x1F641;</span>no buyers yet</span> " + sharingWord1 + "</span>";		
+			document.getElementById("counter1").innerHTML = numbercountformat1 + "  <span class='icon'>&#x1F644;</span> 0</span> " + sharingWord1 + "</span>";		
 		}
 		paywallreturn1 = object.returndata;	
 	}
 	if (object.tip == "yes") {
+		console.log("object.tips");
 		console.log("share mex " + sharingWord3 + sharingWord1);	
 		skript = "handleSuccessfulTip(payment)";
 		paymentLabel = "Tip";
@@ -239,14 +259,19 @@ function loadButton(word) {
 		console.log(element);
 		setTimeout(function() { 
 		if (typeof tips !== "undefined") {
-			if (object.nometanet !== "yes") {
-				document.getElementById("counterTips").innerHTML = numbercountformat2 + " <span class='icon'>&#10084;</span>" + tips + " tips</span>" + sharingWord3 + "</div>";
+			console.log("tips detected");
+			if (object.nometanet !== "yes" && tips !== 0) {
+				document.getElementById("counterTips").innerHTML = numbercountformat2 + " <span class='icon'>&#10084;</span>" + tips + "</span>" + sharingWord3 + "</div>";
+			}
+			else {
+				console.log("no tips");
+				document.getElementById("counterTips").innerHTML = numbercountformat2 + " <span class='icon'>&#128580;</span>" + tips + "</span>" + sharingWord3 + "</div>";
 			}
 		}
 		else {
 			//document.getElementById("counterTips").innerHTML = "Nobody tiped the author. " + sharingWord3;
 			console.log("share me " + sharingWord3 + sharingWord1);	
-			document.getElementById("counterTips").innerHTML = numbercountformat2 + " <span class='icon'>&#x1F641;</span>no tips yet</span>" + sharingWord3 + "</span>";			
+			document.getElementById("counterTips").innerHTML = numbercountformat2 + " <span class='icon'>&#x1F644;</span> 0</span>" + sharingWord3 + "</span>";			
 		}
 		tipreturn = object.returndata;
 	}, 300);
@@ -256,10 +281,15 @@ function loadButton(word) {
 		paymentLabel = "Buy";
 		element = "mbutton2";
 		if (typeof buys2 !== "undefined") {
-			document.getElementById("counter2").innerHTML = numbercountformat3 + "<span class='icon'>&#128591;</span>" + buys2 + " buyers</span>" + sharingWord2 + "</span>";
+			if (buys2 == 0) {
+				document.getElementById("counter2").innerHTML = numbercountformat3 + "<span class='icon'>&#x1F644;</span>" + buys2 + "</span>" + sharingWord2 + "</span>";
+			}
+			else {
+				document.getElementById("counter2").innerHTML = numbercountformat3 + "<span class='icon'>&#x1F48E;</span>" + buys2 + "</span>" + sharingWord2 + "</span>";
+			}
 		}
 		else {
-			document.getElementById("counter2").innerHTML = numbercountformat3 + " <span class='icon'>&#x1F641;</span>no buyers yet</span>" + sharingWord2 + "</span>";	
+			document.getElementById("counter2").innerHTML = numbercountformat3 + " <span class='icon'>&#x1F48E;</span> 0</span>" + sharingWord2 + "</span>";	
 		}
 		paywallreturn2 = object.returndata;
 	}
@@ -291,7 +321,6 @@ function loadButton(word) {
 		object.sharingamount1 = object.amount * object.sharing;		
 		object.amount = object.amount * (1 - object.sharing - object.refAmount);	
 	}	
-		
 	outPuts = [
 		{
 			to: object.to,
@@ -390,27 +419,38 @@ function expandInfo(elem, amount) {
 				buys = 0
 			}
 			console.log(buys + " | " +  object.amount);
-			document.getElementById("box").innerHTML = buys + " happy people " + verb + " this article and spend " + (amount * buys).toFixed(2) + " " + object.currency + " for it. Join them! <a href='http://mediopay.com/bsv-how'>Learn how</a>";	
+			document.getElementById("box").innerHTML = "<span class='icon'>&#x1F48E;</span>" + buys + " people " + verb + " this article and spend " + (amount * buys).toFixed(2) + " " + object.currency;	
 			document.getElementById("box").style.width = "400px";
+			document.getElementById("box").style.cursor = "default";
 			document.getElementById("box").setAttribute( "onClick", "javascript: deflateInfo('box', " + amount + ")");
+			document.getElementById("box").onmouseleave = function() { console.log("now");deflateInfo('box', amount);	};
 	}	
 	if (elem == "box3") {
 			if (typeof tips == "undefined") {
 				tips = 0
 			}
 			verb = "tipped";
-			document.getElementById("box3").innerHTML = tips + " happy people " + verb + " this article and spend " + (amount * tips).toFixed(2) + " " + object.currency + " for it. Join them! <a href='http://mediopay.com/bsv-how'>Learn how</a>";	
-			document.getElementById("box3").style.width = "400px"; 			
-			document.getElementById("box3").setAttribute( "onClick", "javascript: deflateInfo('box3', " + amount + ")");	
+			theIcon = "&#10084;";
+			if (tips == 0) {
+				theIcon = "&#x1F641;"; 		
+			}
+			document.getElementById("box3").innerHTML = "<span class='icon'>" + theIcon + "</span>" + tips + " people " + verb + " this article and spend " + (amount * tips).toFixed(2) + " " + object.currency;	
+				document.getElementById("box3").style.width = "400px"; 	
+			document.getElementById("box3").style.cursor = "default";		
+			document.getElementById("box3").setAttribute( "onClick", "javascript: deflateInfo('box3', " + amount + ")");
+			document.getElementById("box3").setAttribute( "onMouseOver", "javascript: deflateInfo('box3', " + amount + ")");
+		document.getElementById("box3").onmouseleave = function() { console.log("nowg");deflateInfo('box3', amount);	};		
 	}
 	if (elem == "box4") {
 		if (typeof buys2 == "undefined") {
 				buys2 = 0
 			}
 			verb = "bought";
-			document.getElementById("box4").innerHTML = buys2 + " happy people " + verb + " this article and spend " + (amount * buys2).toFixed(2) + " " + object.currency + " for it. Join them! <a href='http://mediopay.com/bsv-how'>Learn how</a>";	
-			document.getElementById("box4").style.width = "400px"; 
+			document.getElementById("box4").innerHTML = "<span class='icon'>&#x1F48E;</span>" + buys2 + " people " + verb + " this article and spend " + (amount * buys2).toFixed(2) + " " + object.currency;	
+				document.getElementById("box4").style.width = "400px"; 
+			document.getElementById("box4").style.cursor = "default";
 			document.getElementById("box4").setAttribute( "onClick", "javascript: deflateInfo('box4', " + amount + ")");
+			document.getElementById("box4").onmouseleave = function() { console.log("now");deflateInfo('box4', amount);	};
 	}
 }
 
@@ -418,13 +458,15 @@ function deflateInfo(elem, amount) {
 	console.log(elem);
 	if (elem == "box") {
 		noum = " buyers";	
-		theIcon = "&#128591;";
+		theIcon = "&#x1F48E;";
 		if (buys == 0) {
 			theIcon = "&#x1F641;"; 		
 		}
 		document.getElementById("box").innerHTML = "<span class='icon'>" + theIcon + "</span>" + buys + " buyers" ;
 		document.getElementById("box").style.width = "120px";
+		document.getElementById("box").style.cursor = "help";
 		document.getElementById("box").setAttribute( "onClick", "javascript: expandInfo('box', " + amount + ")");
+		document.getElementById("box").onmouseon = function() { console.log("now");expandInfo('box', amount);	};
 		
 	}	
 	if (elem == "box3") {
@@ -435,17 +477,21 @@ function deflateInfo(elem, amount) {
 		}
 		document.getElementById("box3").innerHTML = "<span class='icon'>" + theIcon + "</span>" + tips + " tips";
 		document.getElementById("box3").style.width = "120px"; 
+		document.getElementById("box3").style.cursor = "help";
 		document.getElementById("box3").setAttribute( "onClick", "javascript: expandInfo('box3', " + amount + ")");
+		document.getElementById("box3").onmouseon = function() { console.log("nowgg");expandInfo('box3', amount);	};
 	}
 	if (elem == "box4") {
 		noum = " buyers";	
-		theIcon = "&#128591;";
+		theIcon = "&#x1F48E;";
 		if (buys2 == 0) {
 			theIcon = "&#x1F641;"; 		
 		}
 		document.getElementById("box4").innerHTML =  "<span class='icon'>" + theIcon + "</span>" + buys2 + " buyers ";
 		document.getElementById("box4").style.width = "120px";
+		document.getElementById("box4").style.cursor = "help";
 		document.getElementById("box4").setAttribute( "onClick", "javascript: expandInfo('box4', " + object.amount + ")");
+		document.getElementById("box4").onmouseon = function() { console.log("now");expandInfo('box4', amount);	};
 	}	
 }
 
@@ -474,8 +520,10 @@ function expandInfo2(elem) {
 		verb = "to tip ";
 		verb2 = "tips";
 	}
-	document.getElementById(elem).innerHTML = "You are the " + noum + verb + "this article and will receive an income share for all " + verb2 + " after you.</em>";
+	document.getElementById(elem).innerHTML = "You are the " + noum + verb + "this article and will receive an income share for all " + verb2 + " after you for up to " + shareQuote + "%";
 	document.getElementById(elem).style.width = "400px"; 
+	document.getElementById(elem).style.cursor = "default";
+	document.getElementById(elem).style.backgroundColor = "white"; 
 	//document.getElementById(elem).style.backgroundColor = "#C5C5C5";
 	//document.getElementById(elem).style.borderLeft = "10px solid #C5C5C5"; 
 	//document.getElementById(elem).style.paddingLeft = "10px"; 
@@ -487,9 +535,10 @@ function expandInfo2(elem) {
 function deflateInfo2(elem) {
 	console.log("Elem")
 	console.log(elem);
-	document.getElementById(elem).innerHTML = "<span class='icon'>&cent;</span> income share available";
+	document.getElementById(elem).innerHTML = "<span class='icon'>&cent;</span> " + shareQuote + "%";;
 	document.getElementById(elem).style.width = "250px"; 
 	document.getElementById(elem).style.backgroundColor = "white"; 
+	document.getElementById(elem).style.cursor = "help";
 	document.getElementById(elem).style.borderLeft = "0px solid white"; 
 	document.getElementById(elem).setAttribute( "onClick", "javascript: expandInfo2('" + elem + "')");
 }
