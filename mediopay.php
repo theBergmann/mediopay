@@ -704,7 +704,7 @@ function wpdev_before_after($post_content) {
 	}
 	$realContent1 = $meta_paidcontent;
 	$realContent1 =  json_encode($realContent1);
-	$blackenedContent1 = "<br /><span style='background-color:#". $barColor . "'>";
+	$blackenedContent1 = "<span style='background-color:#". $barColor . ";line-height:26pt;'>";
 	for ($i=0; $i<($lengthContent/3*2); $i++) {
 	        if (is_integer($i / 10)) {
 	            $blackenedContent1 .= " ";
@@ -712,8 +712,13 @@ function wpdev_before_after($post_content) {
 			$blackenedContent1 .= "&nbsp;&nbsp;" ;	
 			// #7B7878	
 	}	
+	$blackenedContent1 .= "<br /><br />";
 	if (strlen($meta_paidcontent) > 0) {
-		$post_content .= "<em>" . strlen($meta_paidcontent) . " characters behind the paywall</em><br /><br />";
+		//$post_content .= "<em>" . strlen($meta_paidcontent) . " characters behind the paywall</em><br /><br />";
+		$behindTheWall = 	"Continue reading <b>" . strlen($meta_paidcontent) . "</b> characters for " . $meta_amount . " " . $currency . "<span id='pay1' onclick='getInfo(\"pay1\")'><b> (?)</b></span><br />";
+	}
+	else {
+		$behindTheWall = "";	
 	}
 	echo "<script>realContent1=" . $realContent1 . ";</script>";
 	echo "<script>lengthText1=\"" . $lengthContent . "\";</script>";
@@ -728,9 +733,17 @@ function wpdev_before_after($post_content) {
 	echo "<script>checkBox=\"" . $meta_checkbox . "\";</script>";
 	echo "<script>tipAmount=\"" . $meta_tip_amount	 . "\";</script>";
 	if ($meta_paidcontent) {
-	   $fullcontent1 = $post_content . "<div id='frame1'><div class='money-button' id='mbutton1'></div><div id='counter1'></div></div><div id='unlockable1'>" . $blackenedContent1 . "</div>";
+	   $fullcontent1 = $post_content . 
+	   	"<div class='frame1'>" . 
+	   		$behindTheWall . 
+	   		"<div class='money-button' id='mbutton1'></div>
+	   		<div id='counter1'></div>
+	   	</div>
+	   		<div id='unlockable1'>" . $blackenedContent1 . 
+	   		"</div>";
 	   if ($meta_checkbox == "yes");
-	   	$fullcontent1 = $fullcontent1 . "<div class='money-button' id='tbutton'></div><div id='counterTips'></div>";
+	   	$fullcontent1 = $fullcontent1 . "<div class='frame1'><b>Tip</b> the author! <span id='tip' onclick='getInfo(\"tip\")'><b>(?)</b></span><br /><div class='money-button' id='tbutton'></div><div id='counterTips'></div></div>";
+	   	echo "<script>console.log(dataContent);</script>";
 	   	echo "<script>console.log('meta-paid content + checbox');tipbuttr = document.getElementById('tbutton');console.log(tipbuttr);</script>";
 	}
 	else if ($meta_checkbox == "yes") {
@@ -751,7 +764,7 @@ function wpdev_before_after($post_content) {
    ?>
    <style>
         /* The CSS you'll need in your website */
-       
+
 
         #unlockable1.unlocked {
         		opacity:1;
@@ -760,11 +773,15 @@ function wpdev_before_after($post_content) {
             transition: color 3s;
             text-shadow: 0 0 0 white;
             transition: text-shadow 3s;
+            line-height: 1.5;
         }
-        #frame1 {
-				/*border-left:10px solid #4772F6;*/    
-				height:125px;
-				padding-left:10px;
+        .frame1 {
+				background-color: #F7F7F7;
+        		font-family: sans-serif;
+        		border: 1px solid #D1D1D1;
+        		border-radius:2px;
+        		padding:6px;
+        		font-family:sans-serif;    
         
         }
 		 #frame1.paid {
@@ -780,13 +797,17 @@ function wpdev_before_after($post_content) {
 			margin-left:187px; 
 			margin-top:-70px;
 			text-align:right;
+			
 		}
 		#box3, #box2, #box, #box4, #box6, #box5, #box2  {
-			font-size:14px;
+			margin-top:-70px;	
+			font-size:16px;
 			font-family:sans-serif;
 			<!--border-left:6px solid #FFCEB5;-->
-			padding-left:4px;
-			margin-top:-15px;		
+			padding-left:0px;
+			cursor:help;
+			margin-bottom:25px;
+				
 		}
 		.icon {
 			font-size:30px;
@@ -798,9 +819,8 @@ function wpdev_before_after($post_content) {
 		}
         
     </style>   
-<script src="https://unpkg.com/bsv@0.30.0/bsv.min.js"></script>
-<script src="https://www.moneybutton.com/moneybutton.js"></script>
-<!--<script src="/blog/wp-content/plugins/MedioPay/scripts.js"></script>-->
+<script src="/lib/bsv.min.js"></script>
+<script src="/lib/moneybutton.js"></script>
     <script>
 	// create Objects to pass to the money button creation script    
 	secondEdit = "yes";
@@ -808,6 +828,7 @@ function wpdev_before_after($post_content) {
 	dataURL = window.location.pathname;
    paymentObjects = [];
     if (checkBox == "yes") {
+    	console.log("checkbox");
     	  var returndata = bsv.Script.buildDataOut(['1NYJFDJbcSS2xGhGcxYnQWoh4DAjydjfYU', "" + '100201', "" + dataTitle, "" + dataContent, "" + dataDomain, "" + dataURL, "" + sharingQuota, "" + refQuota]).toASM();
     	  paymentLabel = "tip";
     	  tip = {
@@ -830,6 +851,8 @@ function wpdev_before_after($post_content) {
 			 tip.refID = refID;    	 
 			 tip.outputs = 2;   
     	  }
+    	  console.log("tip");
+    	  console.log(tip);
     	  paymentObjects.push(tip);
 	 }
 	 else {    	
@@ -977,7 +1000,7 @@ function paywall_function( $attr, $content) {
 	}
 	$realContent2 = $content;
 	$realContent2 =  json_encode($realContent2);
-	$blackenedContent2 = "<br /><span style='background-color:#". $barColor . "'>";
+	$blackenedContent2 = "<br /><span style='background-color:#". $barColor . ";line-height:26pt;'>";
 	for ($i=0; $i<($lengthContent/3*2); $i++) {
 	        if (is_integer($i / 10)) {
 	            $blackenedContent2 .= " ";
@@ -986,6 +1009,7 @@ function paywall_function( $attr, $content) {
 
 			// #7B7878	
 	}	
+	$blackenedContent2 .= "<br /><br />";
 	echo "<script>realContent2=" . $realContent2 . ";</script>";
 	echo "<script>lengthText=\"" . $lengthContent . "\";</script>";
 	echo "<script>paymentAmount=\"" . $meta_amount . "\";</script>";
@@ -1000,24 +1024,33 @@ function paywall_function( $attr, $content) {
 	echo "<script>dataTitle=\"" . get_the_title() . "\";dataTitle = encodeURI(dataTitle); </script>";
 	if (isset($attr["amount"])){
 		echo "<script>paymentAmount=\"" . $attr["amount"] . "\";</script>";
+		$amount = $attr["amount"];
 	}
 	else {
-		echo "<script>paymentAmount=\"" . $current_fixedAmount . "\";</script>";	
+		echo "<script>paymentAmount=\"" . $current_fixedAmount . "\";</script>";
+		$amount = $current_fixedAmount;	
 	}
 	$path = plugin_dir_url( 'mediopay.php');
 	$path = $path . "MedioPay/scripts.js";
 	//echo "<script>scriptPath=\"" . $path . "\";</script>";
 	echo "<script src='" . $path . "'></script>";
 	if (strlen($content) > 0) {
-		echo "<em>" . strlen($content) . " characters behind the paywall</em><br /><br />";
+		$behindTheWall2 = "Continue reading <b>" . strlen($content) . "</b> characters for " . $amount . " " . $currency . "<span id='pay2' onclick='getInfo(\"pay2\")'><b> (?)</b></span><br />";
+	}
+	else {
+		$behindTheWall2 = "";	
 	}
 	?>
 	<div id="frame2">
-	<div class="money-button" id="mbutton2"></div>
-	<div id="counter2"></div></div>
+		<?php echo $behindTheWall2; ?>
+		<div class="money-button" id="mbutton2"></div>
+		<div id="counter2"></div>
+ 	</div>
    <style>
         /* The CSS you'll need in your website */
         #unlockable2 {
+        	line-height: 1.5;
+        	margin-top:-20px;
             /*visibility: hidden;
             opacity: 0;
             transition: opacity 5s;
@@ -1040,15 +1073,24 @@ function paywall_function( $attr, $content) {
             transition: text-shadow 3s;
         }
         #frame2 {
-				/*border-left:10px solid #4772F6;*/    
-				height:125px;
-				padding-left:10px;
+        		background-color: #F7F7F7;
+        		font-family: sans-serif;
+        		border: 1px solid #D1D1D1;
+        		border-radius: 2px;
+        		padding:6px;
+        		
+				/*border-left:10px solid #4772F6;    
+				height:125px;*/
         
         }
 		 #frame2.paid {
 				border-left:10px solid #4772F6;
 				height:125px;	 
-		 }        
+		 }   
+		 
+		 #pay1, #pay2, #tip {
+			cursor: help;		 
+		 }     
         
     </style>   
     <script>
@@ -1097,6 +1139,22 @@ function paywall_function( $attr, $content) {
             document.getElementById("counter2").innerHTML="";
 				document.getElementById("mbutton2").innerHTML="";
     }
+	 function getInfo(field) {
+	 	verb = "read the rest of the article";
+	 	if (field == "tip") {
+			verb = "tip the author";	 	
+	 	}
+	 	document.getElementById(field).innerHTML = "<br /><div style='background-color:white'>You can " + verb + " with Bitcoin SV (BSV) and MoneyButton. <a href='http://mediopay.com/bsv-how'>Learn how and get your starting BSV</a></div>";		 
+		document.getElementById(field).setAttribute( "onClick", "javascript: noInfo('" + field + "')");	 
+		document.getElementById(field).style.backgroundColor = "white";
+	 }
+	 function noInfo(field) {
+		document.getElementById(field).innerHTML = "<b>(?)</b>";		 
+		document.getElementById(field).setAttribute( "onClick", "javascript: getInfo('" + field + "')");	 
+		document.getElementById(field).style.backgroundColor = "#f7f7f7";
+	 
+	 }   
+    
     </script>
     <div id="unlockable2">
 		<?= $blackenedContent2 ?>
