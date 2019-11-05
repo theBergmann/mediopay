@@ -1,0 +1,149 @@
+// Styles for Options
+
+
+
+
+.mediopay_table td {
+width:30%;
+max-width:300px;
+valign:top;
+font-size:14px;
+margin-bottom:5px;
+border:1px solid black;
+}
+
+.mediopay_table tr td:nth-of-type(2) {
+padding:30px;
+padding-top:0px;
+}
+
+// Styles for PayWall
+
+
+/*.mp_black {
+  color:black;
+}
+
+.mp_white {
+  color:white;
+}*/
+
+#mp_fade {
+
+}
+
+.mp_fading {
+  background-image: linear-gradient(180deg,#000000 0%,rgba(0,0,0,0) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position:relative;
+}
+
+
+
+.mp_invisible {
+    visibility:hidden;
+}
+
+.mp_visible {
+    visibility:visible;
+}
+
+#mp_unlockable1.unlocked {
+    opacity:1;
+    transition: opacity 3s;
+    color:#2F2F2F;
+    transition: color 3s;
+    text-shadow: 0 0 0 white;
+    transition: text-shadow 3s;
+    line-height: 1.5;
+}
+.mp_frame1 {
+  font-size: 14px;
+  font-family: "Lucida Sans Unicode";
+  border-radius:2px;
+  padding:10px;
+  text-align: center;
+  border-radius: 3px;
+}
+
+.mp_frame1 h3 {
+  font-family: Lucida;
+}
+
+
+#mbutton1, #mbutton2, #tbutton {
+margin:auto;
+padding-left:78px;
+}
+
+#mp_frame1.paid {
+height:125px;
+}
+#boxx, #box44 {
+border: 1px solid #FB9868;
+border-radius:8px;
+padding:3px;
+background-color: #FFCEB5;
+width:120px;
+margin-left:187px;
+margin-top:-70px;
+text-align:right;
+
+}
+#mp_box3, #mp_box2, #mp_box, #mp_box4, #mp_box6, #mp_box5, #mp_box2  {
+margin-top:-70px;
+font-size:12px;
+font-family:sans-serif;
+<!--border-left:6px solid #FFCEB5;-->
+padding-left:0px;
+cursor:help;
+margin-bottom:25px;
+
+}
+.icon {
+font-size:30px;
+font-weight: bold;
+}
+
+
+
+#unlockable2 {
+  line-height: 1.5;
+  margin-top:-20px;
+    /*visibility: hidden;
+    opacity: 0;
+    transition: opacity 5s;
+    opacity:0.8;
+    color: #7B7878;
+  text-shadow: 0 0 10px black,
+         0 0 50px black,
+         0 0 20px black,
+         0 0 20px black,
+         0 0 20px black,
+         0 0 20px black;*/
+}
+
+#unlockable2.unlocked {
+    opacity:1;
+    transition: opacity 3s;
+    color:#2F2F2F;
+    transition: color 3s;
+    text-shadow: 0 0 0 white;
+    transition: text-shadow 3s;
+}
+#mp_frame2 {
+  font-size: 14px;
+  font-family: "Lucida Sans Unicode";
+  border-radius:2px;
+  padding:10px;
+  text-align: center;
+  border-radius: 3px;
+}
+#mp_frame2.paid {
+height:125px;
+}
+
+#mp_pay1, #mp_pay2, #mp_tip {
+cursor: help;
+}
