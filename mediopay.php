@@ -1,10 +1,10 @@
 <?php
 /*
- * Plugin Name: MedioPay-test
+ * Plugin Name: MedioPay
  * Description: This plugin allows PayWalls and Tip Button for Wordpress
  * Version: 0.1
- * Requires at least: 4.6
- * Requires PHP: 7.2
+ * Requires at least: 4.2
+ * Requires PHP: 6.2
  * Author: MedioPay
  * Author URI: https://mediopay.com
  * License: GPL v2 or later
@@ -631,7 +631,7 @@ function mediopay_create_paywall($post_content) {
 		$path = plugin_dir_url( 'mediopay.php');
 		$path = $path . "MedioPay/lib/";
 		echo "<script>MedioPayPath=\"" . $path . "\";</script>";
-		$behindTheWall = 	"<h3>Tip the Author and continue reading</h3>" . strlen($meta_paidcontent) . "</b> characters for " . esc_html($meta_amount) . " " . esc_html($mp_currency) . "<br /><em>No registration. No subscription. Just one swipe.</em>  <span id='mp_pay1' onclick='mp_getInfo(\"mp_pay1\")'><img src='" . $path . "questionmark.png' width='17'
+		$behindTheWall = 	"<font size='5'>Tip the Author and continue reading</font><br />" . strlen($meta_paidcontent) . "</b> characters for " . esc_html($meta_amount) . " " . esc_html($mp_currency) . "<br /><em>No registration. No subscription. Just one swipe.</em>  <span id='mp_pay1' onclick='mp_getInfo(\"mp_pay1\")'><img src='" . $path . "questionmark.png' width='17'
 	 /></span><br />";
 	}
 	else {
@@ -658,27 +658,28 @@ function mediopay_create_paywall($post_content) {
 		 else {
 			 $mp_fullcontent1 .= "<div id='mp_fade' class='mp_fading' >";
 		 }
-	   $mp_fullcontent1 .= $mp_fading_content . "</div></div>";
+	   $mp_fullcontent1 .= $mp_fading_content . "</div>";
 		 if ($mp_shortcode == "yes") {
 			 $mp_fullcontent1 .= "<div class='mp_frame1 mp_invisible' id='mp_frame1' style='background-color:" . $mp_barColor . "'>";
 		}
 		 else {
 			 	$mp_fullcontent1 .= "<div class='mp_frame1' id='mp_frame1' style='background-color:" . $mp_barColor . "'>";
 		 }
-		$mp_fullcontent1 .=		$behindTheWall .
+		$mp_fullcontent1 .= $behindTheWall .
 	   		"<script>MedioPay_textColor('mp_frame1');</script><div class='money-button' id='mbutton1'></div>
 	   		<div id='mp_counter1'></div>
 	   	</div>
 	   		<div id='mp_unlockable1'>
 	   		</div>";
 	   if ($mp_meta_checkbox == "yes") {
-	   		$mp_fullcontent1 = $mp_fullcontent1 . "<div class='mp_frame1 mp_invisible' id='mp_tipFrame' style='background-color:" . $mp_barColor . "'><script>MedioPay_textColor('mp_tipFrame');</script><h3>Tip the author!</h3>
+	   		$mp_fullcontent1 = $mp_fullcontent1 . "<div class='mp_frame1 mp_invisible' id='mp_tipFrame' style='background-color:" . $mp_barColor . "'><script>MedioPay_textColor('mp_tipFrame');</script><font size='5'>Tip the author!</font><br />
 				<em>No registration. No subscription. Just one swipe.</em>  <span id='mp_tip' onclick='mp_getInfo(\"mp_tip\")'><img src='" . $path . "questionmark.png' width='17'
 		 	/></span><br /><div class='money-button' id='tbutton'></div><div id='counterTips'></div></div>";
 		}
 	}
 	else if ($mp_meta_checkbox == "yes") {
-		$mp_fullcontent1 = $post_content . "<div class='mp_frame1' id='mp_frame1'><h3>Tip the author and share the post</h3>
+		
+		$mp_fullcontent1 = $post_content . "<div class='mp_frame1' id='mp_frame1'><font size='5'>Tip the author and share the post</font><br />
 		<em>No registration. No subscription. Just one swipe.</em>  <span id='mp_tip' onclick='mp_getInfo(\"mp_tip\")'><img src='" . $path . "questionmark.png' width='17'
 	 /></span><br /><div class='money-button' id='tbutton'></div><div id='counterTips'></div></div>";
 	}
@@ -768,7 +769,8 @@ function MedioPay_paywall_function( $attr, $content) {
 	echo "<script>sharingQuota='" . esc_js($mp_current_sharing) . "';</script>";
 	echo "<script>refQuota='" . esc_js($mp_current_ref) . "';</script>";
 	echo "<script>nometanet='" . esc_js($mp_current_metanet) . "';</script>";
-	echo "<script>barColor='" . esc_js($mp_barColor) . "';</script>";
+	echo "<script>mp_barColor='" . esc_js($mp_barColor) . "';</script>";
+
 
 	if (isset($attr["amount"])){
 		echo "<script>paymentAmount2=\"" . esc_js($attr["amount"]) . "\";</script>";
@@ -806,7 +808,7 @@ function MedioPay_paywall_function( $attr, $content) {
 		$path = plugin_dir_url( 'mediopay.php');
 		$path = $path . "MedioPay/lib/";
 		echo "<script>MedioPayPath=\"" . $path . "\";</script>";
-		$behindTheWall2 = "<h3>Tip the author and continue reading</h3>" . strlen($content) . "</b> characters for " . esc_html($mp_amount) . " " . esc_html($mp_currency) .
+		$behindTheWall2 = "<font size='5'>Tip the author and continue reading</font><br />" . strlen($content) . "</b> characters for " . esc_html($mp_amount) . " " . esc_html($mp_currency) .
 		"<br /><em>No registration. No subscription. Just one swipe.</em>  <span id='mp_pay2' onclick='mp_getInfo(\"mp_pay2\")'><img src='" . $path . "questionmark.png' width='17'
 	 /></span><br />";
  	}
@@ -820,9 +822,12 @@ function MedioPay_paywall_function( $attr, $content) {
 			<div class='money-button' id='mbutton2'></div>
 			<div id='mp_counter2'></div>
 		</div>
-			<div id='mp_unlockable2'>
-			</div>
+			<div id='mp_unlockable2'><div id='mp_unlockable2_content'></div>
+
 <script>
+	if (typeof mp_checkBox == "undefined") {
+		mp_checkBox = "no";	
+	}
 	mp_createObject("mp_shortcode");
 	mediopayHideNextElements();
 	</script>
