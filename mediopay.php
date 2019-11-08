@@ -23,7 +23,7 @@ function uninstall_mediopay() {
      delete_option("my_plugin_db_version");
 }
 
-register_deactivation_hook( 'MedioPay/mediopay.php', 'mediopaydeactivate' );
+register_deactivation_hook( 'mediopay/mediopay.php', 'mediopaydeactivate' );
 
 function mediopaydeactivate() {
 	  global $wpdb;
@@ -34,8 +34,8 @@ function mediopaydeactivate() {
 }
 
 
-register_activation_hook( 'MedioPay/mediopay.php', 'mediopayactivate' );
-register_activation_hook( 'MedioPay/mediopay.php', 'mediopayactivate_data' );
+register_activation_hook( 'mediopay/mediopay.php', 'mediopayactivate' );
+register_activation_hook( 'mediopay/mediopay.php', 'mediopayactivate_data' );
 
 // Create Table in Database
 
@@ -99,9 +99,9 @@ function mediopayactivate_data() {
 
 // add style and scripts
 
-function MedioPay_add_scripts() {
+function mediopay_add_scripts() {
 	$path = plugin_dir_url( 'mediopay.php');
-	$path = $path . "MedioPay/lib/";
+	$path = $path . "mediopay/lib/";
 	wp_enqueue_style( 'style', $path . 'style.css' );
 	wp_enqueue_script( 'moneybutton', $path . 'moneybutton.js', true);
 	wp_enqueue_script( 'bsv', $path . 'bsv.min.js', true);
@@ -109,16 +109,16 @@ function MedioPay_add_scripts() {
 	wp_enqueue_script( 'scripts_create_paywall', $path . 'scripts_create_paywall.js', true);
 	wp_enqueue_script( 'scripts_after_paywall', $path . 'scripts_after_paywall.js',  true);
 }
-add_action( 'wp_enqueue_scripts', 'MedioPay_add_scripts' );
+add_action( 'wp_enqueue_scripts', 'mediopay_add_scripts' );
 
-function MedioPay_add_admin_scripts() {
+function mediopay_add_admin_scripts() {
 	$path = plugin_dir_url( 'mediopay.php');
-	$path = $path . "MedioPay/lib/";
+	$path = $path . "mediopay/lib/";
 	//admin_enqueue_scripts( 'style', $path . 'style.css' );
 	//admin_enqueue_scripts( 'scripts_pre_paywall', $path . 'scripts_pre_paywall.js', true);
 }
 
-add_action( 'admin_enqueue_scripts', 'MedioPay_add_admin_scripts' );
+add_action( 'admin_enqueue_scripts', 'mediopay_add_admin_scripts' );
 
 // Register Option for MedioPay
 
@@ -129,14 +129,14 @@ function mediopay_register_settings() {
 add_action( 'admin_init', 'mediopay_register_settings' );
 
 function mediopay_register_options_page() {
-  add_options_page('MedioPay Options', 'MedioPay', 'manage_options', 'mediopay', 'mediopay_option_page');
+  add_options_page('mediopay Options', 'mediopay', 'manage_options', 'mediopay', 'mediopay_option_page');
 }
 add_action('admin_menu', 'mediopay_register_options_page');
 
 function mediopay_option_page() {
 
 	$path = plugin_dir_url( 'mediopay.php');
-	$path = $path . "MedioPay/lib/";
+	$path = $path . "mediopay/lib/";
 	wp_enqueue_style( 'style', $path . 'style.css' );
 	?>
 	<h1>MedioPay Micropayment Options</h1>
@@ -165,7 +165,7 @@ function mediopay_option_page() {
 	$myrows = $wpdb->get_results( "SELECT noEditField FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_edit = $myrows[0]->noEditField;
 	$path = plugin_dir_url( 'mediopay.php');
-	$path = $path . "MedioPay/mediopay.php";
+	$path = $path . "mediopay/mediopay.php";
 	$myrows = $wpdb->get_results( "SELECT barColor FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_color = $myrows[0]->barColor;
    ?>
@@ -629,7 +629,7 @@ function mediopay_create_paywall($post_content) {
 	}
 	if (strlen($meta_paidcontent) > 0) {
 		$path = plugin_dir_url( 'mediopay.php');
-		$path = $path . "MedioPay/lib/";
+		$path = $path . "mediopay/lib/";
 		echo "<script>MedioPayPath=\"" . $path . "\";</script>";
 		$behindTheWall = 	"<font size='5'>Tip the Author and continue reading</font><br />" . strlen($meta_paidcontent) . "</b> characters for " . esc_html($meta_amount) . " " . esc_html($mp_currency) . "<br /><em>No registration. No subscription. Just one swipe.</em>  <span id='mp_pay1' onclick='mp_getInfo(\"mp_pay1\")'><img src='" . $path . "questionmark.png' width='17'
 	 /></span><br />";
@@ -806,7 +806,7 @@ function MedioPay_paywall_function( $attr, $content) {
 
 	if (strlen($content) > 0) {
 		$path = plugin_dir_url( 'mediopay.php');
-		$path = $path . "MedioPay/lib/";
+		$path = $path . "mediopay/lib/";
 		echo "<script>MedioPayPath=\"" . $path . "\";</script>";
 		$behindTheWall2 = "<font size='5'>Tip the author and continue reading</font><br />" . strlen($content) . "</b> characters for " . esc_html($mp_amount) . " " . esc_html($mp_currency) .
 		"<br /><em>No registration. No subscription. Just one swipe.</em>  <span id='mp_pay2' onclick='mp_getInfo(\"mp_pay2\")'><img src='" . $path . "questionmark.png' width='17'
