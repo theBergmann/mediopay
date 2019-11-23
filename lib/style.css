@@ -1,24 +1,61 @@
-// Styles for Options
-
-
-
-
-.mediopay_table td {
-width:30%;
-max-width:300px;
-valign:top;
-font-size:14px;
-margin-bottom:5px;
-border:1px solid black;
+.mediopay_table {
+width:80%;
+max-width:1000px;
 }
 
+.mediopay_table td {
+margin-bottom:5px;
+vertical-align:top;
+padding-top:20px;
+}
+
+.mediopay_column_small {
+	width:20%;
+	max-width:250px;
+}
+
+.mediopay_column_large {
+	padding-left:50px;
+	width:40%;
+	max-width:400px;
+
+
+}
+
+/*
 .mediopay_table tr td:nth-of-type(2) {
 padding:30px;
 padding-top:0px;
+width: 400px;
+}*/
+
+.mediopay_options_h1 {
+font-size: 23px;
+font-weight: 400;
+margin: 0;
+padding: 9px 0 4px 0;
+line-height: 1.3;
 }
 
-// Styles for PayWall
+.mediopay_options_h2 {
+font-size: 18px;
+font-weight: 400;
+margin: 0;
+padding: 9px 0 4px 0;
+line-height: 1.3;
+}
 
+.mp_options {
+font-size: 14px;
+line-height: 1.5;
+margin: 1em 0;
+}
+
+.mp_options p {
+font-size: 14px;
+line-height: 1.5;
+margin: 1em 0;
+}
 
 /*.mp_black {
   color:black;
@@ -26,14 +63,19 @@ padding-top:0px;
 
 .mp_white {
   color:white;
-}*/
+}
 
 #mp_fade {
 
 }
 
+
+.superhead {
+color:blue;
+}*/
+
 .mp_fading {
-  background-image: linear-gradient(180deg,#000000 0%,rgba(0,0,0,0) 100%);
+	background-image: linear-gradient(180deg,#000000 0%,rgba(0,0,0,0) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       position:relative;
