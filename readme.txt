@@ -118,14 +118,13 @@ Screenshots mp_screenshot_1.png to mp_screenshot_8.png are in the /assets direct
 
 == Changelog ==
 
-= 1.3.1 =
+= 1.5 =
 
-Fix an issue when metadata is deactivated.
+Introducing cookies to show paid posts automatically. Allowing bloggers to set individual texts on paywalls.
 
 == Development ==
 
 We manage a development version of MedioPay on https://github.com/theBergmann/MedioPay
-
 
 
 
