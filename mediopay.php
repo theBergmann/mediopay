@@ -2,7 +2,7 @@
 /*
  * Plugin Name: MedioPay
  * Description: This plugin allows PayWalls and Tip Button for Wordpress
- * Version: 1.3.1
+ * Version: 1.5
  * Requires at least: 4.2
  * Requires PHP: 6.2
  * Author: MedioPay
@@ -12,7 +12,7 @@
  */
 
 // Activation, Deactivation, Uninstall
-register_uninstall_hook( 'MedioPay/mediopay.ph', 'uninstall_mediopay' );
+register_uninstall_hook( 'mediopay/mediopay.ph', 'uninstall_mediopay' );
 
 function uninstall_mediopay() {
 	 global $wpdb;
@@ -100,18 +100,24 @@ function mediopayactivate_data() {
 function mediopay_add_scripts() {
 	$path = plugin_dir_url( 'mediopay.php');
 	$path = $path . "mediopay/lib/";
+	wp_enqueue_script('jquery');
 	wp_enqueue_style( 'style', $path . 'style.css' );
 	wp_enqueue_script( 'moneybutton', $path . 'moneybutton.js', true);
 	wp_enqueue_script( 'bsv', $path . 'bsv.min.js', true);
 	wp_enqueue_script( 'scripts_pre_paywall', $path . 'scripts_pre_paywall.js', true);
 	wp_enqueue_script( 'scripts_create_paywall', $path . 'scripts_create_paywall.js', true);
 	wp_enqueue_script( 'scripts_after_paywall', $path . 'scripts_after_paywall.js',  true);
+	wp_enqueue_script( 'ajax-script', get_template_directory_uri() . '/js/my-ajax-script.js', array('jquery') );
+	wp_localize_script( 'ajax-script', 'my_ajax_object',
+            array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
 }
 add_action( 'wp_enqueue_scripts', 'mediopay_add_scripts' );
 
 function mediopay_add_admin_scripts() {
 	$path = plugin_dir_url( 'mediopay.php');
 	$path = $path . "mediopay/lib/";
+	wp_localize_script( 'ajax-script', 'ajax_object',
+            array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1234 ) );
 }
 
 add_action( 'admin_enqueue_scripts', 'mediopay_add_admin_scripts' );
@@ -134,50 +140,55 @@ function mediopay_option_page() {
 	$path = $path . "mediopay/lib/";
 	wp_enqueue_style( 'style', $path . 'style.css' );
 	?>
-	<h1>MedioPay Micropayment Options</h1>
-	<h2>Basic Options</h2>
-	<p>These options are required to use MedioPay.</p><?php
+	<h1 class="mediopay_options_h1">Settings › MedioPay</h1>
+	<h2 class="mediopay_options_h2">Basics</h2>
+	<div class="mp_options">
+	<p>These options are <b><u>required</u></b> to use MedioPay.</p><?php
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mediopay';
-	$myrows = $wpdb->get_results( "SELECT address FROM " . $table_name . " WHERE id = 1" );
+	$myrows = $wpdb->get_results( "SELECT * FROM " . $table_name . " WHERE id = 1" );
 	$mp_currentaddress = $myrows[0]->address;
-	$myrows = $wpdb->get_results( "SELECT currency FROM " . $table_name . " WHERE id = 1" );
 	$mp_currentcurrency = $myrows[0]->currency;
-	$myrows = $wpdb->get_results( "SELECT fixedAmount FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_fixedAmount = $myrows[0]->fixedAmount;
-	$myrows = $wpdb->get_results( "SELECT sharingQuote FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_sharing = $myrows[0]->sharingQuote;
-	$myrows = $wpdb->get_results( "SELECT ref FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_ref = $myrows[0]->ref;
-	$myrows = $wpdb->get_results( "SELECT noMetanet FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_metanet = $myrows[0]->noMetanet;
-	$myrows = $wpdb->get_results( "SELECT fixedTipAmount FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_tip_amount = $myrows[0]->fixedTipAmount;
-	$myrows = $wpdb->get_results( "SELECT fixedThankYou FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_thankyou = $myrows[0]->fixedThankYou;
-	$myrows = $wpdb->get_results( "SELECT noEditField FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_edit = $myrows[0]->noEditField;
+	$mp_current_color = $myrows[0]->barColor;
+	if ( isset($myrows[0]->paywallMsg)) {
+		$mp_current_paywall_msg = $myrows[0]->paywallMsg;
+	}
+	else {
+	}
+	if ( isset($myrows[0]->tippingMsg)) {
+		$mp_current_tipping_msg = $myrows[0]->tippingMsg;
+	}
+	else {
+	}
+	
 	$path = plugin_dir_url( 'mediopay.php');
 	$path = $path . "mediopay/mediopay.php";
-	$myrows = $wpdb->get_results( "SELECT barColor FROM " . $table_name . " WHERE id = 1" );
-	$mp_current_color = $myrows[0]->barColor;
+
+	
    ?><form name='setmediopay' method='post' action="<?php esc_url( $_SERVER['REQUEST_URI'] ) ?>">
 		<table class="mediopay_table">
 		<tr>
-		<td>
-			<b>Your Bitcoin SV address</b><br />Enter your Bitcoin SV address, your paymail address or just your MoneyButton handle. You can use any BSV-Wallet, but we recommend <a href='https://moneybutton.com' target='_blank'>
-			MoneyButton</a> as it allows you to test your paywall for yourself.
-		</td>
-		<td>
+		<td class="mediopay_column_small">
+			<b>Your Bitcoin SV address</b></td>
+		<td class="mediopay_column_large">
     	<input type='text' name='MedioPay_address'<?php if (isset($mp_currentaddress) AND $mp_currentaddress !== "none") {echo "value='" . esc_html($mp_currentaddress) . "'";} ?>
     	/>
+    	<br />Enter your Bitcoin SV address, paymail address or MoneyButton ID.
+
     	</td>
     	</tr>
 		<tr>
-		<td>
-    	<b>The currency to denominate payments.</b><br />Set a currency in which the payments are denominated.
+		<td class="mediopay_column_small">
+    	<b>The currency to denominate payments.</b><br />
     	</td>
-    	<td>
+    	<td class="mediopay_column_large">
     	<select name='MedioPay_currency'>
       	<option value="USD" <?php if ($mp_currentcurrency == "USD") {echo  "selected='selected'";} ?> >US Dollar</option>
       	<option value="EUR" <?php if ($mp_currentcurrency == "EUR") {echo  "selected='selected'";} ?> >Euro</option>
@@ -189,50 +200,68 @@ function mediopay_option_page() {
 			<option value="RUB" <?php if ($mp_currentcurrency == "RUB") {echo  "selected='selected'";} ?> >Russian Rubles</option>
     	</select>
     	<input type='hidden' name='check' value='one'>
+    	<br />Set a currency in which the payments are denominated.
 		</td>
 		</tr>
 		<tr>
-		<td>
-    	<h2>Advanced Options</h2>These settings are optional.
+		<td class="mediopay_column_small">
+    	<h2 class="mediopay_options_h2">Personalize MedioPay</h2>
+    	<p>Optional: Make your Paywall fits your blogging style</p>
     	</td>
     	</tr>
 			<tr>
-			<td>
-			<b>Set color of the paywall</b><br />Individualize your paywall so it fits the design of your blog.
+			<td  class="mediopay_column_small">
+			<b>Set color of the paywall</b>
 			</td>
-			<td>
-				<label for="MedioPay_bar_color"><?php esc_html($mp_current_color) ?><br />
+			<td  class="mediopay_column_large">
+				<label for="MedioPay_bar_color"><?php esc_html($mp_current_color) ?>
 					<input type="color" id="select_color" name="MedioPay_bar_color" value="<?php echo esc_html($mp_current_color); ?>"
 		           >
 		   </label>
+		   <br />Apply your color themes to the PayWall.
 		   </td>
 		   </tr>
-
     	<tr>
-    	<td>
-    	<b>Deactivate Metadata</b><br />Don't add metadata to the transactions.
-		<br /><br /></td>
-		<td>
-		<label for="MedioPay_no_metadata">
-		<input type="checkbox" name="MedioPay_deactivate_metadata" id="MedioPay_deactivate_metadata" value="yes" <?php if ( $mp_current_metanet == "yes" ) {echo "checked";} ?> "/>
-	</label>
-		</td>
-		</tr>
 		<tr>
-		<td><b>Deactivate PayWall Edit Field</b><br />In some cases the second editor field is annoying. Deactivate it and use the <code>[paywall]...[/paywall]</code>
-		shortcode: Just put the paywalled content between the shortcodes.<br />
+		<td class="mediopay_column_small">
+		<b>Your personal PayWall-Text</b>		
 		</td>
-		<td>
-	<label for="MedioPay_no_edit_field">
-		<input type="checkbox" name="MedioPay_deactivate_edit" id="MedioPay_deactivate_edit" value="yes" <?php if ( $mp_current_edit == "yes" ) {echo "checked";} ?> "/>
-	</label>
+		<td class="mediopay_column_large">
+		<label for="MedioPay_paywall_msg">   	
+    	<input type="text" name="MedioPay_paywall_msg" id="MedioPay_paywall_msg"  value="<?php if ( isset ( $mp_current_paywall_msg ) ) echo esc_html($mp_current_paywall_msg); ?>" /><br />
+		Put your individual message in the PayWall fields. You know best what your readers need to know.<br />
+		</td>
+	</tr>
+	<tr>
+		<td class="mediopay_column_small">
+		<b>Your personal Tipping-Field-Text</b>		
+		</td>
+		<td class="mediopay_column_large">
+		<label for="MedioPay_tipping_msg">   	
+    	<input type="text" name="MedioPay_tipping_msg" id="MedioPay_tipping_msg"  value="<?php if ( isset ( $mp_current_tipping_msg ) ) echo esc_html($mp_current_tipping_msg); ?>" /><br />
+		Put your individual message in the Tipping field. Tell your readers why they should give your a tip.<br />
+		</td>
+	</tr> 
+	<tr>
+   <td class="mediopay_column_small">
+   <b>Set a fixed Thank You Message for Tips</b>
+   </td>
+   <td class="mediopay_column_large">
+   <label for="MedioPay_fixed_thank_you">
+   <input type="text" name="MedioPay_fixed_thank_you" id="MedioPay_fixed_thank_you"  value="<?php if ( isset ( $mp_current_thankyou ) ) echo esc_html($mp_current_thankyou); ?>" /><br />
+	When someone tips you, a thank you message is shown. You can either type it specifically for each post, or you can set a default thank you message.
 	</td>
 	</tr>
-	   <tr>
-   <td>
-   <b>Set your sharing quote</b><br />First buyers or tipers get a share of future income. Set how much you want to share with your readers.
- 	<br /><br /></td>
- 	<td>
+	<tr>
+	<td class="mediopay_column_small">
+	<h2 class="mediopay_options_h2">Your MedioPay Economics</h2>
+   <p>Optional: Design the micropayment economy on your blog</p>  	
+   </td>
+   </tr>
+	<tr>
+   <td class="mediopay_column_small">
+   <b>Set your sharing quote</b></td>
+ 	<td class="mediopay_column_large">
 	<label for="MedioPay_sharing_quote"><?php esc_html($mp_current_sharing) ?>
 	<select name='MedioPay_sharing_quote'>
       	<option value="0.0" <?php if ($mp_current_sharing == "0.0") {echo  "selected='selected'";} ?>
@@ -247,13 +276,13 @@ function mediopay_option_page() {
       	>40%</option>
    </select>
    </label>
-   </td>
+   <br />First buyers or tipers get a share of future income. Set how much you share with your readers.
+	</td>
    </tr>
    <tr>
-   <td>
-   <b>Set your Reflink share</b><br />After buying your article, readers get an affiliate link for it. Set how much
-	 you want to share with the affiliate link.   <br /><br /></td>
-   <td>
+   <td class="mediopay_column_small">
+   <b>Set your Reflink share</b></td>
+   <td class="mediopay_column_large">
    <label for="MedioPay_ref_quote"><?php esc_html($mp_current_ref) ?>
 	<select name='MedioPay_ref_quote'>
       	<option value="0.0" <?php if ($mp_current_ref == "0.0") {echo  "selected='selected'";} ?>
@@ -268,55 +297,78 @@ function mediopay_option_page() {
       	>40%</option>
    </select>
 	</label>
+	<br />After having bought an article, readers get an affiliate link. Set how much
+	 to share with it.
 	</td>
 	</tr>
 	<tr>
-	<td>
-	<b>Set a default amount for your paywall</b><br />You can set a default amount for the paywall. This makes it more convenient for you, as you don't need to set the amount with each paywall. If
-	you set not default amount, you have to enter it manually, either above the second editor field, or in the shortcode: <code>[paywall amount="0.5"]</code>.
+	<td class="mediopay_column_small">
+	<b>Set a default amount for your paywall</b>
 	<br /><br /></td>
-	<td>
+	<td class="mediopay_column_large">
 	<label for="MedioPay_fixed_amount">
 	<input type="number" step="0.01" name="MedioPay_fixed_amount" id="MedioPay_fixed_amount" value="<?php if ( $mp_current_fixedAmount !== "none") { echo esc_html($mp_current_fixedAmount);} ?>" />
         <?php echo "<b>" . esc_html($mp_currentcurrency) . "</b><br />" ?>
    </label>
+   A default amount for the paywall makes using MedioPay more convenient for you. If you don't have set it, enter it manually
+   above the second editor field or with shortcode: <code>[paywall amount="0.5"]</code>.
    </td>
    </tr>
    <tr>
-   <td>
-   <b>Set a default amount for tips</b><br />Same as with the paywall amount, but for tips: Set a default tip amount, so you don't need to set it for each post.
+   <td class="mediopay_column_small">
+   <b>Set a default amount for tips</b>
    <br /></td>
-   <td>
+   <td class="mediopay_column_large">
 	<label for="MedioPay_fixed_amount_tips">
 	<input type="number" step="0.01" name="MedioPay_fixed_amount_tips" id="MedioPay_fixed_amount_tips" value="<?php if ( $mp_current_tip_amount !== "none") { echo esc_html($mp_current_tip_amount);} ?>" />
         <?php echo "<b>" . esc_html($mp_currentcurrency) . "</b><br />" ?>
    </label>
+   Same as the option above: Set a default tip amount.
    </td>
    </tr>
    <tr>
-   <td>
-   <b>Set a fixed Thank You Message for Tips</b><br />When someone tips you, a thank you message is shown. You can either type it specifically for each post, or you can set a default thank you message.
-   </td>
-   <td>
-   <label for="MedioPay_fixed_thank_you">
-   <input type="text" name="MedioPay_fixed_thank_you" id="MedioPay_fixed_thank_you"  value="<?php if ( isset ( $mp_current_thankyou ) ) echo esc_html($mp_current_thankyou); ?>" /><br /><br />
-	<div id="url"></div>
+	<td class="mediopay_column_small">
+   <h2 class="mediopay_options_h2">Deactivate features</h2>
+   <p>Optional: Sometimes less is more ... </p>
+	</td></tr>
+   <tr>
+    	<td class="mediopay_column_small">
+    	<b>Deactivate Metadata</b>
+		<br /><br /></td>
+		<td class="mediopay_column_large">
+		<label for="MedioPay_no_metadata">
+		<input type="checkbox" name="MedioPay_deactivate_metadata" id="MedioPay_deactivate_metadata" value="yes" <?php if ( $mp_current_metanet == "yes" ) {echo "checked";} ?> "/>
+	</label>
+	<br />Don't add metadata to the transactions.
+		</td>
+		</tr>
+		<tr>
+		<td class="mediopay_column_small"><b>Deactivate PayWall Edit Field</b>
+		</td>
+		<td class="mediopay_column_large">
+	<label for="MedioPay_no_edit_field">
+		<input type="checkbox" name="MedioPay_deactivate_edit" id="MedioPay_deactivate_edit" value="yes" <?php if ( $mp_current_edit == "yes" ) {echo "checked";} ?> "/>
+	</label>
+	<br />In some cases the second editor field is annoying. Deactivate it and use the <code>[paywall]...[/paywall]</code>
+		shortcode: Just put the paywalled content between the shortcodes.<br />
 	</td>
 	</tr>
 	</table>
+	<div id="url"></div>
 	<script type="text/javascript" >
 		const thisURL = window.location.href;
 		document.getElementById("url").innerHTML = "<input type='hidden' name='MedioPay_thisURL' value='" + thisURL + "' />";
 	</script>
    <input type="submit" class="button button-primary" value='save' />
-   </form>
+   </form></div>
     	<?php
 }
 // save the settings
 
-if(isset($_POST['MedioPay_address']) OR isset($_POST['MedioPay_currency']) OR isset($_POST['deactivate_metadata']) OR isset($_POST['MedioPay_sharing_quote']) OR isset($_POST['ref_quote']) OR isset($_POST['fixed_amount']) OR isset($_POST['fixed_amount_tips']) OR isset($_POST['fixed_thank_you']) OR isset($_POST['bar_color'])) {
+if(isset($_POST['MedioPay_address']) OR isset($_POST['MedioPay_currency']) OR isset($_POST['deactivate_metadata']) OR isset($_POST['MedioPay_sharing_quote']) OR isset($_POST['ref_quote']) OR isset($_POST['fixed_amount']) OR isset($_POST['fixed_amount_tips']) OR isset($_POST['fixed_thank_you']) OR isset($_POST['bar_color']) OR isset($_POST['MedioPay_paywall_msg'])) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mediopay';
+		
 		if(isset($_POST['MedioPay_address'])) {
 			$newaddress = sanitize_text_field($_POST["MedioPay_address"]);
 		$newaddress = array( 'address' => $newaddress );
@@ -325,16 +377,16 @@ if(isset($_POST['MedioPay_address']) OR isset($_POST['MedioPay_currency']) OR is
 	}
 	if(isset($_POST['MedioPay_currency'])) {
 		$newcurrency = sanitize_text_field($_POST['MedioPay_currency']);
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mediopay';
+		/*global $wpdb;
+		$table_name = $wpdb->prefix . 'mediopay';*/
 		$newcurrency = array( 'currency' => $newcurrency );
 		$data_where = array( 'id' => 1);
 		$wpdb->update($table_name,$newcurrency,$data_where);
 	}
 	if(isset($_POST['MedioPay_sharing_quote'])) {
 		$newsharing = sanitize_text_field($_POST["MedioPay_sharing_quote"]);
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mediopay';
+		/*global $wpdb;
+		$table_name = $wpdb->prefix . 'mediopay';*/
 		$newsharing = array( 'sharingQuote' => $newsharing );
 		$data_where = array( 'id' => 1);
 		$wpdb->update($table_name,$newsharing,$data_where);
@@ -349,8 +401,8 @@ if(isset($_POST['MedioPay_address']) OR isset($_POST['MedioPay_currency']) OR is
 	}
 	if(isset($_POST['MedioPay_fixed_amount'])) {
 		$newfixed = sanitize_text_field($_POST["MedioPay_fixed_amount"]);
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mediopay';
+		/*global $wpdb;
+		$table_name = $wpdb->prefix . 'mediopay';*/
 		$newfixed = array( 'fixedAmount' => $newfixed );
 		$data_where = array( 'id' => 1);
 		$wpdb->update($table_name,$newfixed,$data_where);
@@ -365,23 +417,23 @@ if(isset($_POST['MedioPay_address']) OR isset($_POST['MedioPay_currency']) OR is
 	}
 	if(isset($_POST['MedioPay_fixed_thank_you'])) {
 		$newthankyou = sanitize_text_field($_POST["MedioPay_fixed_thank_you"]);
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mediopay';
+		/*global $wpdb;
+		$table_name = $wpdb->prefix . 'mediopay';*/
 		$newthankyou = array( 'fixedThankYou' => $newthankyou );
 		$data_where = array( 'id' => 1);
 		$wpdb->update($table_name,$newthankyou,$data_where);
 	}
 	if(isset($_POST['MedioPay_deactivate_metadata'])) {
 		$newmetadata = sanitize_text_field($_POST["MedioPay_deactivate_metadata"]);
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mediopay';
+		/*global $wpdb;
+		$table_name = $wpdb->prefix . 'mediopay';*/
 		$newmetadata = array( 'noMetanet' => $newmetadata );
 		$data_where = array( 'id' => 1);
 		$wpdb->update($table_name,$newmetadata,$data_where);
 	}
 	else {
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mediopay';
+		/*global $wpdb;
+		$table_name = $wpdb->prefix . 'mediopay';*/
 		$newmetadata = array( 'noMetanet' => 'no' );
 		$data_where = array( 'id' => 1);
 		$wpdb->update($table_name,$newmetadata,$data_where);
@@ -389,8 +441,8 @@ if(isset($_POST['MedioPay_address']) OR isset($_POST['MedioPay_currency']) OR is
 	if(isset($_POST['MedioPay_deactivate_edit'])) {
 		$newedit = sanitize_text_field($_POST["MedioPay_deactivate_edit"]);
 		//echo $newedit;
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mediopay';
+		/*global $wpdb;
+		$table_name = $wpdb->prefix . 'mediopay';*/
 		$newedit = array( 'noEditField' => $newedit );
 		$data_where = array( 'id' => 1);
 		$wpdb->update($table_name,$newedit,$data_where);
@@ -398,16 +450,16 @@ if(isset($_POST['MedioPay_address']) OR isset($_POST['MedioPay_currency']) OR is
 	if(isset($_POST['MedioPay_bar_color'])) {
 		$newedit = sanitize_hex_color($_POST["MedioPay_bar_color"]);
 		//echo $newedit;
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mediopay';
+		/*global $wpdb;
+		$table_name = $wpdb->prefix . 'mediopay';*/
 		$newedit = array( 'barColor' => $newedit );
 		$data_where = array( 'id' => 1);
 		$wpdb->update($table_name,$newedit,$data_where);
 	}
 	else {
 		//echo "no new edit";
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mediopay';
+		/*global $wpdb;
+		$table_name = $wpdb->prefix . 'mediopay';*/
 		$newedit = array( 'noEditField' => 'no' );
 		$data_where = array( 'id' => 1);
 		$wpdb->update($table_name,$newedit,$data_where);
@@ -417,8 +469,41 @@ if(isset($_POST['MedioPay_address']) OR isset($_POST['MedioPay_currency']) OR is
 		echo "<script>thisURL='" . $thisURL . "';</script>";
 		//echo $thisURL;
 	}
+	if(isset($_POST['MedioPay_paywall_msg'])) {
+		$myrows = $wpdb->get_results( "SELECT * FROM " . $table_name . " WHERE id = 1" );
+		if ( isset($myrows[0]->paywallMsg)) {
+			$newedit = sanitize_text_field($_POST["MedioPay_paywall_msg"]);
+			$newedit = array( 'paywallMsg' => $newedit );
+			$data_where = array( 'id' => 1);
+			$wpdb->update($table_name,$newedit,$data_where);	
+		}
+		else {
+			 $wpdb->query("ALTER TABLE " . $table_name . " ADD paywallMsg tinytext NOT NULL");
+			 $newedit = sanitize_text_field($_POST["MedioPay_paywall_msg"]);
+			$newedit = array( 'paywallMsg' => $newedit );
+			$data_where = array( 'id' => 1);
+			$wpdb->update($table_name,$newedit,$data_where);
+		}
+	}	
+	if(isset($_POST['MedioPay_tipping_msg'])) {
+		$myrows = $wpdb->get_results( "SELECT * FROM " . $table_name . " WHERE id = 1" );
+		if ( isset($myrows[0]->tippingMsg)) {
+			$newedit = sanitize_text_field($_POST["MedioPay_tipping_msg"]);
+			$newedit = array( 'tippingMsg' => $newedit );
+			$data_where = array( 'id' => 1);
+			$wpdb->update($table_name,$newedit,$data_where);	
+		}
+		else {
+			 $wpdb->query("ALTER TABLE " . $table_name . " ADD tippingMsg tinytext NOT NULL");
+			 $newedit = sanitize_text_field($_POST["MedioPay_tipping_msg"]);
+			$newedit = array( 'tippingMsg' => $newedit );
+			$data_where = array( 'id' => 1);
+			$wpdb->update($table_name,$newedit,$data_where);
+		}
+	}	
 	echo "<script>location.replace(thisURL);</script>";
 }
+
 
 // add Metaboxes to editor site
 // first: an editor for the paywalled content
@@ -487,13 +572,17 @@ function mediopay_meta_callback_tips( $post ) {
 	<?php
 }
 
+
 add_action( 'add_meta_boxes', 'mediopay_custom_meta_paidcontent' );
 add_action( 'add_meta_boxes', 'mediopay_custom_meta_tips' );
+//add_action( 'add_meta_boxes', 'mediopay_secret1_box' );
+//add_action( 'add_meta_boxes', 'mediopay_secret2_box' );
 
 // Save metabox content as Metadata
 function mediopay_meta_save( $post_id ) {
     $is_revision = wp_is_post_revision( $post_id );
     $is_valid_nonce = ( isset( $_POST[ 'mediopay_nonce' ] ) && wp_verify_nonce( $_POST[ 'mediopay_nonce' ], basename( __FILE__ ) ) ) ? 'true' : 'false';
+    $mediopay_stored_meta = get_post_meta( $post_id );
     if ( $is_revision || !$is_valid_nonce ) {
         return;
     }
@@ -513,7 +602,15 @@ function mediopay_meta_save( $post_id ) {
         update_post_meta( $post_id, 'meta-tipAmount', sanitize_text_field( $_POST[ 'meta-tipAmount' ] ) );
     }
     if( isset($_POST['meta_paidcontent']) ){
-		update_post_meta ( $post_id, 'meta-paidcontent', wp_kses_post( $_POST[ 'meta_paidcontent' ]));
+			update_post_meta ( $post_id, 'meta-paidcontent', wp_kses_post( $_POST[ 'meta_paidcontent' ]));
+	}
+	if (!isset($mediopay_stored_meta['meta-secretword-1'])) {
+		$mp_meta_secret_01 = rand(100000, 999999);
+		update_post_meta ( $post_id, 'meta-secretword-1', $mp_meta_secret_01 );
+	}
+	if (!isset($mediopay_stored_meta['meta-secretword-2'])) {
+		$mp_meta_secret_02 = rand(100000, 999999);
+		update_post_meta ( $post_id, 'meta-secretword-2', $mp_meta_secret_02 );
 	}
 }
 add_action( 'save_post', 'mediopay_meta_save' );
@@ -530,29 +627,26 @@ function mediopay_create_paywall($post_content) {
 	$meta_thankyou = get_post_meta( $mypost_id, 'meta-textarea', true );
 	$meta_amount  = get_post_meta( $mypost_id, 'meta-amount', true );
 	$meta_tip_amount  = get_post_meta( $mypost_id, 'meta-tipAmount', true );
+	$mp_meta_secret1  = get_post_meta( $mypost_id, 'meta-secretword-1', true );
+	$mp_meta_secret2  = get_post_meta( $mypost_id, 'meta-secretword-2', true );
+	echo "<script>mp_metasecret1='" . hash('sha256', $mp_meta_secret1) . "';</script>";
+	echo "<script>mp_metasecret2='" . hash('sha256', $mp_meta_secret2) . "';</script>";
+
 	if ((isset($meta_paidcontent) AND (strlen($meta_paidcontent)) > 0) OR (isset($mp_meta_checkbox)) AND (strlen($mp_meta_checkbox)) > 0) {
 		if (isset($_GET["ref"])) {
 			$mp_refID = $_GET["ref"];
 			echo "<script>mp_refID='" . 	esc_js($mp_refID) . "';</script>";
 		}
 	$table_name = $wpdb->prefix . 'mediopay';
-	$myrows = $wpdb->get_results( "SELECT address FROM " . $table_name . " WHERE id = 1" );
+	$myrows = $wpdb->get_results( "SELECT * FROM " . $table_name . " WHERE id = 1" );
 	$mp_address = $myrows[0]->address;
-	$myrows = $wpdb->get_results( "SELECT currency FROM " . $table_name . " WHERE id = 1" );
 	$mp_currency = $myrows[0]->currency;
-	$myrows = $wpdb->get_results( "SELECT fixedAmount FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_fixedAmount = $myrows[0]->fixedAmount;
-	$myrows = $wpdb->get_results( "SELECT sharingQuote FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_sharing = $myrows[0]->sharingQuote;
-	$myrows = $wpdb->get_results( "SELECT ref FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_ref = $myrows[0]->ref;
-	$myrows = $wpdb->get_results( "SELECT noMetanet FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_metanet = $myrows[0]->noMetanet;
-	$myrows = $wpdb->get_results( "SELECT fixedTipAmount FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_tip_amount = $myrows[0]->fixedTipAmount;
-	$myrows = $wpdb->get_results( "SELECT fixedThankYou FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_thankyou = $myrows[0]->fixedThankYou;
-	$myrows = $wpdb->get_results( "SELECT barColor FROM " . $table_name . " WHERE id = 1" );
 	$mp_barColor = $myrows[0]->barColor;
 	if (!isset($meta_amount) OR $meta_amount == 0) {
 		$meta_amount = $mp_current_fixedAmount;
@@ -568,6 +662,19 @@ function mediopay_create_paywall($post_content) {
 			$meta_thankyou = $mp_current_thankyou;
 		}
 	}
+	if ( isset($myrows[0]->paywallMsg)) {
+		$mp_current_paywall_msg = $myrows[0]->paywallMsg;
+	}
+	else {
+		$mp_current_paywall_msg = "Tip the author and continue reading";
+	}	
+	if ( isset($myrows[0]->tippingMsg)) {
+		$mp_current_tipping_msg = $myrows[0]->tippingMsg;
+	}
+	else {
+		$mp_current_tipping_msg = "Tip the author and share this post";
+	}	
+	
 	$mp_shortcode = "no";
 	if ( has_shortcode( $post_content, 'paywall' )) {
 		 $mp_shortcode = "yes";
@@ -582,6 +689,7 @@ function mediopay_create_paywall($post_content) {
 	echo "<script>refQuota='" . esc_js($mp_current_ref) . "';</script>";
 	echo "<script>nometanet='" . esc_js($mp_current_metanet) . "';</script>";
 	echo "<script>mp_barColor='" . esc_js($mp_barColor) . "';</script>";
+	echo "<script>mp_mypostid='" . esc_js($mypost_id) . "';</script>";
 
 	if (substr($post_content, -1) == ",") {
 		substr_replace(post_content ,"", -1);
@@ -592,23 +700,26 @@ function mediopay_create_paywall($post_content) {
 	$realContent1 = nl2br($realContent1);
 	$realContent1 =  json_encode($realContent1);
 
-	if (strlen($meta_paidcontent) > 400) {
-		$mp_fading_content = substr( $meta_paidcontent, 0, 400);
+	if (strlen($meta_paidcontent) > 300) {
+		$mp_fading_content = substr( $meta_paidcontent, 0, 300);
+		$mp_fading_content = wp_strip_all_tags( $mp_fading_content);
 	}
 	else {
 			$mp_fading_content = $meta_paidcontent;
+			$mp_fading_content = wp_strip_all_tags( $mp_fading_content);
 	}
+	$mp_length = strlen($meta_paidcontent);
 	if (strlen($meta_paidcontent) > 0) {
 		$path = plugin_dir_url( 'mediopay.php');
 		$path = $path . "mediopay/lib/";
 		echo "<script>MedioPayPath=\"" . $path . "\";</script>";
-		$behindTheWall = 	"<font size='5'>Tip the Author and continue reading</font><br />" . strlen($meta_paidcontent) . "</b> characters for " . esc_html($meta_amount) . " " . esc_html($mp_currency) . "<br /><em>No registration. No subscription. Just one swipe.</em>  <span id='mp_pay1' onclick='mp_getInfo(\"mp_pay1\")'><img src='" . $path . "questionmark.png' width='17'
+		$behindTheWall = 	"<font size='5'>" . $mp_current_paywall_msg . "</font><br />" . strlen($meta_paidcontent) . "</b> characters for " . esc_html($meta_amount) . " " . esc_html($mp_currency) . "<br /><em>No registration. No subscription. Just one swipe.</em>  <span id='mp_pay1' onclick='mp_getInfo(\"mp_pay1\")'><img src='" . $path . "questionmark.png' width='17'
 	 /></span><br />";
 	}
 	else {
 		$behindTheWall = "";
 	}
-	echo "<script>realContent1=" . $realContent1 . ";</script>";
+	echo "<script>realContentLength=" . strlen($realContent1) . ";</script>";
 	echo "<script>lengthText1=\"" . $mp_lengthContent . "\";</script>";
 
 
@@ -636,14 +747,14 @@ function mediopay_create_paywall($post_content) {
 		 else {
 			 	$mp_fullcontent1 .= "<div class='mp_frame1' id='mp_frame1' style='background-color:" . $mp_barColor . "'>";
 		 }
-		$mp_fullcontent1 .= $behindTheWall .
-	   		"<script>MedioPay_textColor('mp_frame1');</script><div class='money-button' id='mbutton1'></div>
+		$mp_fullcontent1 .= $behindTheWall . "<script>MedioPay_textColor('mp_frame1');
+	   		</script><div class='money-button' id='mbutton1'></div>
 	   		<div id='mp_counter1'></div>
 	   	</div>
 	   		<div id='mp_unlockable1'>
 	   		</div>";
 	   if ($mp_meta_checkbox == "yes") {
-	   		$mp_fullcontent1 = $mp_fullcontent1 . "<div style='clear:both;'></div><div class='mp_frame1 mp_invisible' id='mp_tipFrame' style='background-color:" . $mp_barColor . "'><script>MedioPay_textColor('mp_tipFrame');</script><font size='5'>Tip the author!</font><br />
+	   		$mp_fullcontent1 = $mp_fullcontent1 . "<div style='clear:both;'></div><div class='mp_frame1 mp_invisible' id='mp_tipFrame' style='background-color:" . $mp_barColor . "'><script>MedioPay_textColor('mp_tipFrame');</script><font size='5'>". $mp_current_tipping_msg . "</font><br />
 				<em>No registration. No subscription. Just one swipe.</em>  <span id='mp_tip' onclick='mp_getInfo(\"mp_tip\")'><img src='" . $path . "questionmark.png' width='17'
 		 	/></span><br /><div class='money-button' id='tbutton'></div><div id='counterTips'></div></div>";
 		}
@@ -651,7 +762,7 @@ function mediopay_create_paywall($post_content) {
 	else if ($mp_meta_checkbox == "yes") {
 		$path = plugin_dir_url( 'mediopay.php');
 		$path = $path . "mediopay/lib/";
-		$mp_fullcontent1 = $post_content . "<div style='clear:both;'><div class='mp_frame1' id='mp_tipFrame' style='background-color:" . $mp_barColor . "'><font size='5'>Tip the author and share the post</font><br />
+		$mp_fullcontent1 = $post_content . "<div style='clear:both;'><div class='mp_frame1' id='mp_tipFrame' style='background-color:" . $mp_barColor . "'><font size='5'>" . $mp_current_tipping_msg . "</font><br />
 		<em>No registration. No subscription. Just one swipe.</em>  <span id='mp_tip' onclick='mp_getInfo(\"mp_tip\")'><img src='" . $path . "questionmark.png' width='17'
 	 /></span><br /><div class='money-button' id='tbutton'></div><div id='counterTips'></div></div>";
 	}
@@ -659,6 +770,18 @@ function mediopay_create_paywall($post_content) {
 		$mp_fullcontent1 = $post_content;
 		}
 
+	/*if (strpos($mp_address, '@') !== false) {
+			$mp_polynym_url = 'https://api.polynym.io/getAddress/' . $mp_address;
+			$mp_address = json_decode(file_get_contents($mp_polynym_url));
+			$mp_address = $mp_address->address;
+			echo "<script>mp_theAddress='" . esc_js($mp_address) . "';</script>";
+	}*/
+	if(is_preview()){ 
+		echo "<script>var mp_preview='yes';</script>";
+	}
+	else { 
+		echo "<script>var mp_preview='no';</script>";
+	};
    ?>
 	 <script>
 	 if (mp_shortCode == "yes" ) {
@@ -698,26 +821,30 @@ function MedioPay_paywall_function( $attr, $content) {
 	$meta_thankyou = get_post_meta( $mypost_id, 'meta-textarea', true );
 	$meta_amount  = get_post_meta( $mypost_id, 'meta-amount', true );
 	$meta_tip_amount  = get_post_meta( $mypost_id, 'meta-tipAmount', true );
+	$mp_meta_secret1  = get_post_meta( $mypost_id, 'meta-secretword-1', true );
+	$mp_meta_secret2  = get_post_meta( $mypost_id, 'meta-secretword-2', true );
+	echo "<script>mp_metasecret1='" . hash('sha256', $mp_meta_secret1) . "';</script>";
+	echo "<script>mp_metasecret2='" . hash('sha256', $mp_meta_secret2) . "';</script>";
 	$table_name = $wpdb->prefix . 'mediopay';
-	$myrows = $wpdb->get_results( "SELECT address FROM " . $table_name . " WHERE id = 1" );
+	$myrows = $wpdb->get_results( "SELECT * FROM " . $table_name . " WHERE id = 1" );
 	$mp_address = $myrows[0]->address;
-	$myrows = $wpdb->get_results( "SELECT currency FROM " . $table_name . " WHERE id = 1" );
 	$mp_currency = $myrows[0]->currency;
-	$myrows = $wpdb->get_results( "SELECT fixedAmount FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_fixedAmount = $myrows[0]->fixedAmount;
-	$myrows = $wpdb->get_results( "SELECT sharingQuote FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_sharing = $myrows[0]->sharingQuote;
-	$myrows = $wpdb->get_results( "SELECT ref FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_ref = $myrows[0]->ref;
-	$myrows = $wpdb->get_results( "SELECT noMetanet FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_metanet = $myrows[0]->noMetanet;
-	$myrows = $wpdb->get_results( "SELECT fixedTipAmount FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_tip_amount = $myrows[0]->fixedTipAmount;
-	$myrows = $wpdb->get_results( "SELECT fixedThankYou FROM " . $table_name . " WHERE id = 1" );
 	$mp_current_thankyou = $myrows[0]->fixedThankYou;
-	$myrows = $wpdb->get_results( "SELECT barColor FROM " . $table_name . " WHERE id = 1" );
 	$mp_barColor = $myrows[0]->barColor;
-
+	$mypost_id = url_to_postid($actual_link);
+	if ( isset($myrows[0]->paywallMsg)) {
+		$mp_current_paywall_msg = $myrows[0]->paywallMsg;
+	}
+	else {
+		$mp_current_paywall_msg = "Tip the author and continue reading";
+	}	
+	
+	echo "<script>mp_mypostid='" . esc_js($mypost_id) . "';</script>";
 
 	if (!isset($meta_amount) OR $meta_amount == 0) {
 		$meta_amount = $mp_current_fixedAmount;
@@ -752,19 +879,21 @@ function MedioPay_paywall_function( $attr, $content) {
 		$mp_amount = $mp_current_fixedAmount;
 	}
 
-
 	$mp_lengthContent = strlen($content);
 	$mp_realContent2 = $content;
+
+
 	$mp_realContent2 =  json_encode($mp_realContent2);
-	if (strlen($mp_realContent2) > 400) {
-		$mp_fading_content_2 = substr( $content, 0, 400);
+
+	if (strlen($mp_realContent2) > 300) {
+		$mp_fading_content_2 = substr( $content, 0, 300);
 		$mp_fading_content_2 = wp_strip_all_tags( $mp_fading_content_2);
 	}
 	else {
 			$mp_fading_content_2 =  wp_strip_all_tags( $content );
 	}
 
-	echo "<script>realContent2=" . $mp_realContent2 . ";</script>";
+	//echo "<script>realContent2=" . $mp_realContent2 . ";</script>";
 	echo "<script>lengthText=\"" . $mp_lengthContent . "\";</script>";
 	echo "<script>mp_paymentAmount2=\"" . esc_js($mp_amount) . "\";</script>";
 
@@ -775,18 +904,26 @@ function MedioPay_paywall_function( $attr, $content) {
 	echo "<script>dataContent=\"" . esc_js($dataContent) . "\";</script>";
 	echo "<script>dataLink=\"" . get_permalink() . "\";</script>";
 	echo "<script>dataTitle=\"" . get_the_title() . "\";dataTitle = encodeURI(dataTitle); </script>";
-
+	
+	$mp_length = strlen($content);	
+	
 	if (strlen($content) > 0) {
 		$path = plugin_dir_url( 'mediopay.php');
 		$path = $path . "mediopay/lib/";
 		echo "<script>MedioPayPath=\"" . $path . "\";</script>";
-		$behindTheWall2 = "<font size='5'>Tip the author and continue reading</font><br />" . strlen($content) . "</b> characters for " . esc_html($mp_amount) . " " . esc_html($mp_currency) .
+		$behindTheWall2 = "<font size='5'>" . $mp_current_paywall_msg . "</font><br />" . strlen($content) . "</b> characters for " . esc_html($mp_amount) . " " . esc_html($mp_currency) .
 		"<br /><em>No registration. No subscription. Just one swipe.</em>  <span id='mp_pay2' onclick='mp_getInfo(\"mp_pay2\")'><img src='" . $path . "questionmark.png' width='17'
 	 /></span><br />";
  	}
 	else {
 		$behindTheWall2 = "";
 	}
+	if(is_preview()){ 
+		echo "<script>var mp_preview='yes';</script>";
+	}
+	else { 
+		echo "<script>var mp_preview='no';</script>";
+	};
 ?>
 <div id='mp_fade2' class='mp_fading' ><?php echo $mp_fading_content_2 ?></div>
 		<div class='mp_frame2' id='mp_frame2' style='background-color:<?php echo $mp_barColor ?>'><script>MedioPay_textColor('mp_frame2');</script><?php echo $behindTheWall2 ?><div class='money-button' id='mbutton2'></div>
@@ -796,7 +933,7 @@ function MedioPay_paywall_function( $attr, $content) {
 
 <script>
 	if (typeof mp_checkBox == "undefined") {
-		mp_checkBox = "no";	
+		mp_checkBox = "no";
 	}
 	mp_createObject("mp_shortcode");
 	mediopayHideNextElements();
@@ -804,4 +941,132 @@ function MedioPay_paywall_function( $attr, $content) {
 <?php
 	return ob_get_clean();
 }
+
+add_action ( 'wp_ajax_mp_throwcontent', 'mp_throwcontent' );
+add_action ( 'wp_ajax_nopriv_mp_throwcontent', 'mp_throwcontent' );
+
+function mp_throwcontent() {
+	$mp_mypost_id = $_POST['MedioPay_postid'];
+	$mp_outputs = $_POST['MedioPay_outputs'];
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'mediopay';
+	$mp_paid_content_1 = get_post_meta( $mp_mypost_id, 'meta-paidcontent', true );
+	$mp_paid_content_1= nl2br($mp_paid_content_1);
+	$myrows = $wpdb->get_results( "SELECT address FROM " . $table_name . " WHERE id = 1" );
+	$mp_address = $myrows[0]->address;
+	if (in_array($mp_address, $mp_outputs)) {
+		$mp_meta_secret1 = get_post_meta( $mp_mypost_id, 'meta-secretword-1', true );	
+		if (strlen($mp_meta_secret1) > 0) {
+				echo "secret" . $mp_meta_secret1 . $mp_paid_content_1;
+			}
+			else {
+				echo "nosecret1111" . $mp_meta_secret1 . $mp_paid_content_1;
+			}
+		//echo  $mp_paid_content_1;
+	}
+	else {
+		echo $mp_address . $mp_my_address;	
+	}
+wp_die();
+}
+
+add_action ( 'wp_ajax_mp_throwcontent_2', 'mp_throwcontent_2' );
+add_action ( 'wp_ajax_nopriv_mp_throwcontent_2', 'mp_throwcontent_2' );
+
+function mp_throwcontent_2() {
+	$mp_mypost_id = $_POST['MedioPay_postid'];
+	$mp_outputs = $_POST['MedioPay_outputs'];
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'posts';
+	$myrows = $wpdb->get_results( "SELECT post_content FROM " . $table_name . " WHERE ID = " . $mp_mypost_id );
+	$mp_paid_content_2 = $myrows[0]->post_content;
+	$mp_pos = strpos($mp_paid_content_2, "[paywall");
+	$mp_pos_helper = substr($mp_paid_content_2,$mp_pos, 20);
+	$mp_pos_helper_pos = strpos($mp_pos_helper, "]");
+	$mp_pos = $mp_pos + $mp_pos_helper_pos + 1;
+	$mp_pos2 = strpos($mp_paid_content_2, "[/paywall]");
+	$mp_paid_content_2 = substr($mp_paid_content_2, $mp_pos, ($mp_pos2 - $mp_pos - 9));
+	$mp_paid_content_2 =  nl2br($mp_paid_content_2);
+	//$mp_paid_content_2 = wp_kses_post($mp_paid_content_2);
+	$table_name = $wpdb->prefix . 'mediopay';
+	$myrows = $wpdb->get_results( "SELECT address FROM " . $table_name . " WHERE id = 1" );
+	$mp_address = $myrows[0]->address;
+	if (in_array($mp_address, $mp_outputs)) {
+		if (get_post_meta( $mp_mypost_id, 'meta-secretword-2', true ) !== null) {
+			$mp_meta_secret2 = get_post_meta( $mp_mypost_id, 'meta-secretword-2', true );	
+			if (strlen($mp_meta_secret2) > 0) {
+				echo "secret" . $mp_meta_secret2 . $mp_paid_content_2;
+			}
+			else {
+				echo "nosecret" . $mp_meta_secret2 . $mp_paid_content_2;
+			}
+		}
+		else {
+			echo "absolutely no secret" . $mp_paid_content_2;
+		}
+	}
+wp_die();
+}
+
+add_action ( 'wp_ajax_mp_process_cookies', 'mp_process_cookies' );
+add_action ( 'wp_ajax_nopriv_mp_process_cookies', 'mp_process_cookies' );
+
+function mp_process_cookies() {
+	$mp_mypost_id = $_POST['MedioPay_postid'];
+	$mp_cookies = $_POST['mp_cookies'];
+	$mp_position_paywall = $_POST['mp_position'];
+	$mp_meta_secret1 = get_post_meta( $mp_mypost_id, 'meta-secretword-1', true );
+	$mp_meta_secret2 = get_post_meta( $mp_mypost_id, 'meta-secretword-2', true );
+	if ($mp_position_paywall == "second_editor") {	
+		if ( strpos($mp_cookies, $mp_meta_secret1) !== false ) {
+			global $wpdb;
+	   	$table_name = $wpdb->prefix . 'mediopay';
+			$mp_paid_content_1 = get_post_meta( $mp_mypost_id, 'meta-paidcontent', true );
+			$mp_paid_content_1= nl2br($mp_paid_content_1);	
+			echo $mp_paid_content_1;	
+		}
+		else {
+		}
+	}
+	if ($mp_position_paywall == "mp_shortcode") {	
+		if ( strpos($mp_cookies, $mp_meta_secret2) !== false ) {
+			global $wpdb;
+			$table_name = $wpdb->prefix . 'posts';
+			$myrows = $wpdb->get_results( "SELECT post_content FROM " . $table_name . " WHERE ID = " . $mp_mypost_id );
+			$mp_paid_content_2 = $myrows[0]->post_content;
+			$mp_pos = strpos($mp_paid_content_2, "[paywall]");
+			$mp_pos2 = strpos($mp_paid_content_2, "[/paywall]");
+			$mp_paid_content_2 = substr($mp_paid_content_2, ($mp_pos + 9), ($mp_pos2 - $mp_pos - 9));
+			$mp_paid_content_2 =  nl2br($mp_paid_content_2);
+			echo $mp_paid_content_2;
+		}
+		else {
+		}
+	}
+wp_die();
+}
+
+/*
+do_action( ' pre_comment_on_post', int $comment_post_ID );
+
+function action_pre_comment_on_post( $array ) {
+	echo "<script>console.log('comment');</script>";
+}
+
+add_action( 'pre_comment_on_post', 'action_pre_comment_on_post', 10, 1);
+*/
+
+function add_non_fake_textarea_field( $default ) {
+	$commenter = wp_get_current_commenter();
+	$default['comment_notes_after'] .= 
+	'<p class="comment-form-just_another_id">
+	<label for="just_another_id">Comment:</label>
+	<textarea id="just_another_id" name="just_another_id" cols="45" rows="8" aria-required="true"></textarea>
+	</p>';
+	return $default;
+}
+ 
+add_filter('comment_form_defaults', 'add_non_fake_textarea_field');
+
+
 ?>
