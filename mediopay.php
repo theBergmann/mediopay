@@ -107,7 +107,8 @@ function mediopay_add_scripts() {
 	wp_enqueue_script( 'scripts_pre_paywall', $path . 'scripts_pre_paywall.js', true);
 	wp_enqueue_script( 'scripts_create_paywall', $path . 'scripts_create_paywall.js', true);
 	wp_enqueue_script( 'scripts_after_paywall', $path . 'scripts_after_paywall.js',  true);
-	wp_enqueue_script( 'ajax-script', get_template_directory_uri() . '/js/my-ajax-script.js', array('jquery') );
+	//wp_enqueue_script( 'ajax-script', get_template_directory_uri() . '/js/my-ajax-script.js', array('jquery') );
+	wp_enqueue_script( 'ajax-script', plugin_dir_url( __FILE__ )  . '/lib/scripts_pre_paywall.js', array('jquery') );	
 	wp_localize_script( 'ajax-script', 'my_ajax_object',
             array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
 }
@@ -580,6 +581,7 @@ add_action( 'add_meta_boxes', 'mediopay_custom_meta_tips' );
 
 // Save metabox content as Metadata
 function mediopay_meta_save( $post_id ) {
+	 $mp_is_published = get_post_status( $post_id );
     $is_revision = wp_is_post_revision( $post_id );
     $is_valid_nonce = ( isset( $_POST[ 'mediopay_nonce' ] ) && wp_verify_nonce( $_POST[ 'mediopay_nonce' ], basename( __FILE__ ) ) ) ? 'true' : 'false';
     $mediopay_stored_meta = get_post_meta( $post_id );
@@ -612,6 +614,11 @@ function mediopay_meta_save( $post_id ) {
 		$mp_meta_secret_02 = rand(100000, 999999);
 		update_post_meta ( $post_id, 'meta-secretword-2', $mp_meta_secret_02 );
 	}
+	if ( $mp_is_published !== "publish")  {
+		update_post_meta ( $post_id, 'meta-newcounter', "yes");
+		update_post_meta ( $post_id, 'meta-newcounter2', "yes");
+		update_post_meta ( $post_id, 'meta-newcounter3', "yes");
+	}
 }
 add_action( 'save_post', 'mediopay_meta_save' );
 
@@ -629,8 +636,84 @@ function mediopay_create_paywall($post_content) {
 	$meta_tip_amount  = get_post_meta( $mypost_id, 'meta-tipAmount', true );
 	$mp_meta_secret1  = get_post_meta( $mypost_id, 'meta-secretword-1', true );
 	$mp_meta_secret2  = get_post_meta( $mypost_id, 'meta-secretword-2', true );
-	echo "<script>mp_metasecret1='" . hash('sha256', $mp_meta_secret1) . "';</script>";
-	echo "<script>mp_metasecret2='" . hash('sha256', $mp_meta_secret2) . "';</script>";
+	//echo "<script>mp_metasecret1='" . hash('sha256', $mp_meta_secret1) . "';</script>";
+	//echo "<script>mp_metasecret2='" . hash('sha256', $mp_meta_secret2) . "';</script>";
+	$mp_newcounter = get_post_meta( $mypost_id, 'meta-newcounter', true );
+	if (isset($mp_newcounter)) {
+		echo "<script>mp_newCounter ='" . $mp_newcounter . "';console.log(mp_newCounter);</script>";
+		$mp_buys1 = get_post_meta( $mypost_id, 'meta_buys1', true );
+		$mp_buys2 = get_post_meta( $mypost_id, 'meta_buys2', true );
+		$mp_tips = get_post_meta( $mypost_id, 'meta_tips', true );
+		$mp_first_buys1 = get_post_meta( $mypost_id, 'meta-first-buys1', true );
+		$mp_second_buys1 = get_post_meta( $mypost_id, 'meta-second-buys1', true );	
+		$mp_third_buys1 = get_post_meta( $mypost_id, 'meta-third-buys1', true );	
+		$mp_fourth_buys1 = get_post_meta( $mypost_id, 'meta-fourth-buys1', true );	
+		$mp_first_buys2 = get_post_meta( $mypost_id, 'meta-first-buys2', true );
+		$mp_second_buys2 = get_post_meta( $mypost_id, 'meta-second-buys2', true );	
+		$mp_third_buys2 = get_post_meta( $mypost_id, 'meta-third-buys2', true );	
+		$mp_fourth_buys2 = get_post_meta( $mypost_id, 'meta-fourth-buys2', true );
+		$mp_first_tips = get_post_meta( $mypost_id, 'meta-first-tips', true );
+		$mp_second_tips = get_post_meta( $mypost_id, 'meta-second-tips', true );	
+		$mp_third_tips = get_post_meta( $mypost_id, 'meta-third-tips', true );	
+		$mp_fourth_tips = get_post_meta( $mypost_id, 'meta-fourth-tips', true );	
+		if (isset($mp_buys1) AND strlen($mp_buys1) > 0) {
+			echo "<script>mp_buys1=" . $mp_buys1 . ";console.log('buys1db'); console.log('mp buys ' + mp_buys1);</script>";
+		}	
+		else {
+			echo "<script>mp_buys1=0;console.log('buys1zero');console.log(mp_buys1);</script>";		
+		}
+		if (isset($mp_buys2) AND strlen($mp_buys2) > 0) {
+			echo "<script>mp_buys2=" . $mp_buys2 . ";</script>";
+		}
+		else {
+			echo "<script>mp_buys2=0;</script>";		
+		}
+		if (isset($mp_tips) AND strlen($mp_tips) > 0) {
+			echo "<script>mp_tips=" . $mp_tips . ";</script>";
+		}	
+		else {
+			echo "<script>mp_tips=0;</script>";		
+		}	
+		if (isset($mp_first_buys1) AND strlen($mp_first_buys1) > 0) {
+			echo "<script>mp_first_buys1='" . $mp_first_buys1 . "';</script>";
+		}
+		if (isset($mp_second_buys1) AND strlen($mp_second_buys1) > 0) {
+			echo "<script>mp_second_buys1='" . $mp_second_buys1 . "';</script>";
+		}	
+		if (isset($mp_third_buys1) AND strlen($mp_third_buys1) > 0) {
+			echo "<script>mp_third_buys1='" . $mp_third_buys1 . "';</script>";
+		}		
+		if (isset($mp_fourth_buys1) AND strlen($mp_fourth_buys1) > 0) {
+			echo "<script>mp_fourth_buys1='" . $mp_fourth_buys1 . "';</script>";
+		}	
+		if (isset($mp_first_buys2) AND strlen($mp_first_buys2) > 0) {
+			echo "<script>mp_first_buys2='" . $mp_first_buys2 . "';</script>";
+		}
+		if (isset($mp_second_buys2) AND strlen($mp_second_buys2) > 0) {
+			echo "<script>mp_second_buys2='" . $mp_second_buys2 . "';</script>";
+		}	
+		if (isset($mp_third_buys2) AND strlen($mp_third_buys2) > 0) {
+			echo "<script>mp_third_buys2='" . $mp_third_buys2 . "';</script>";
+		}		
+		if (isset($mp_fourth_buys2) AND strlen($mp_fourth_buys2) > 0) {
+			echo "<script>mp_fourth_buys2='" . $mp_fourth_buys2 . "';</script>";
+		}	
+		if (isset($mp_first_tips) AND strlen($mp_first_tips) > 0) {
+			echo "<script>mp_first_tips='" . $mp_first_tips . "';</script>";
+		}
+		if (isset($mp_second_tips) AND strlen($mp_second_tips) > 0) {
+			echo "<script>mp_second_tips='" . $mp_second_tips . "';</script>";
+		}	
+		if (isset($mp_third_tips) AND strlen($mp_third_tips) > 0) {
+			echo "<script>mp_third_tips='" . $mp_third_tips . "';</script>";
+		}		
+		if (isset($mp_fourth_tips) AND strlen($mp_fourth_tips) > 0) {
+			echo "<script>mp_fourth_tips='" . $mp_fourth_tips . "';</script>";
+		}					
+	}
+	else {
+		echo "<script>mp_newCounter ='no';</script>";	
+	}
 
 	if ((isset($meta_paidcontent) AND (strlen($meta_paidcontent)) > 0) OR (isset($mp_meta_checkbox)) AND (strlen($mp_meta_checkbox)) > 0) {
 		if (isset($_GET["ref"])) {
@@ -642,7 +725,14 @@ function mediopay_create_paywall($post_content) {
 	$mp_address = $myrows[0]->address;
 	$mp_currency = $myrows[0]->currency;
 	$mp_current_fixedAmount = $myrows[0]->fixedAmount;
-	$mp_current_sharing = $myrows[0]->sharingQuote;
+	$mp_meta_share  = get_post_meta( $mypost_id, 'meta_share', true );
+	if (isset($mp_meta_share) AND strlen($mp_meta_share) > 0) {
+		echo "<script>console.log('sharing quote meta " . $mp_meta_share . "');</script>";
+		$mp_current_sharing = $mp_meta_share;
+	}
+	else {
+		$mp_current_sharing = $myrows[0]->sharingQuote;
+	}
 	$mp_current_ref = $myrows[0]->ref;
 	$mp_current_metanet = $myrows[0]->noMetanet;
 	$mp_current_tip_amount = $myrows[0]->fixedTipAmount;
@@ -823,6 +913,7 @@ function MedioPay_paywall_function( $attr, $content) {
 	$meta_tip_amount  = get_post_meta( $mypost_id, 'meta-tipAmount', true );
 	$mp_meta_secret1  = get_post_meta( $mypost_id, 'meta-secretword-1', true );
 	$mp_meta_secret2  = get_post_meta( $mypost_id, 'meta-secretword-2', true );
+	$mp_meta_share  = get_post_meta( $mypost_id, 'meta-share', true );
 	echo "<script>mp_metasecret1='" . hash('sha256', $mp_meta_secret1) . "';</script>";
 	echo "<script>mp_metasecret2='" . hash('sha256', $mp_meta_secret2) . "';</script>";
 	$table_name = $wpdb->prefix . 'mediopay';
@@ -830,7 +921,14 @@ function MedioPay_paywall_function( $attr, $content) {
 	$mp_address = $myrows[0]->address;
 	$mp_currency = $myrows[0]->currency;
 	$mp_current_fixedAmount = $myrows[0]->fixedAmount;
-	$mp_current_sharing = $myrows[0]->sharingQuote;
+	$mp_meta_share  = get_post_meta( $mypost_id, 'meta_share', true );
+	if (isset($mp_meta_share) AND strlen($mp_meta_share) > 0) {
+		echo "<script>console.log('sharing quote meta " . $mp_meta_share . "');</script>";
+		$mp_current_sharing = $mp_meta_share;
+	}
+	else {
+		$mp_current_sharing = $myrows[0]->sharingQuote;
+	}
 	$mp_current_ref = $myrows[0]->ref;
 	$mp_current_metanet = $myrows[0]->noMetanet;
 	$mp_current_tip_amount = $myrows[0]->fixedTipAmount;
@@ -842,6 +940,83 @@ function MedioPay_paywall_function( $attr, $content) {
 	}
 	else {
 		$mp_current_paywall_msg = "Tip the author and continue reading";
+	}	
+	
+	$mp_newcounter2 = get_post_meta( $mypost_id, 'meta-newcounter2', true );
+	if (isset($mp_newcounter2)) {
+		echo "<script>mp_newCounter2 ='" . $mp_newcounter2 . "';</script>";
+		$mp_buys1 = get_post_meta( $mypost_id, 'meta_buys1', true );
+		$mp_buys2 = get_post_meta( $mypost_id, 'meta_buys2', true );
+		$mp_tips = get_post_meta( $mypost_id, 'meta_tips', true );
+		$mp_first_buys1 = get_post_meta( $mypost_id, 'meta-first-buys1', true );
+		$mp_second_buys1 = get_post_meta( $mypost_id, 'meta-second-buys1', true );	
+		$mp_third_buys1 = get_post_meta( $mypost_id, 'meta-third-buys1', true );	
+		$mp_fourth_buys1 = get_post_meta( $mypost_id, 'meta-fourth-buys1', true );	
+		$mp_first_buys2 = get_post_meta( $mypost_id, 'meta-first-buys2', true );
+		$mp_second_buys2 = get_post_meta( $mypost_id, 'meta-second-buys2', true );	
+		$mp_third_buys2 = get_post_meta( $mypost_id, 'meta-third-buys2', true );	
+		$mp_fourth_buys2 = get_post_meta( $mypost_id, 'meta-fourth-buys2', true );
+		$mp_first_tips = get_post_meta( $mypost_id, 'meta-first-tips', true );
+		$mp_second_tips = get_post_meta( $mypost_id, 'meta-second-tips', true );	
+		$mp_third_tips = get_post_meta( $mypost_id, 'meta-third-tips', true );	
+		$mp_fourth_tips = get_post_meta( $mypost_id, 'meta-fourth-tips', true );	
+		if (isset($mp_buys1) AND strlen($mp_buys1) > 0) {
+			echo "<script>mp_buys1=" . $mp_buys1 . ";console.log('buys1db'); console.log('mp buys ' + mp_buys1);</script>";
+		}	
+		else {
+			echo "<script>mp_buys1=0;console.log('buys1zero');console.log(mp_buys1);</script>";		
+		}
+		if (isset($mp_buys2) AND strlen($mp_buys2) > 0) {
+			echo "<script>mp_buys2=" . $mp_buys2 . ";</script>";
+		}
+		else {
+			echo "<script>mp_buys2=0;</script>";		
+		}
+		if (isset($mp_tips) AND strlen($mp_tips) > 0) {
+			echo "<script>mp_tips=" . $mp_tips . ";</script>";
+		}	
+		else {
+			echo "<script>mp_tips=0;</script>";		
+		}	
+		if (isset($mp_first_buys1) AND strlen($mp_first_buys1) > 0) {
+			echo "<script>mp_first_buys1='" . $mp_first_buys1 . "';</script>";
+		}
+		if (isset($mp_second_buys1) AND strlen($mp_second_buys1) > 0) {
+			echo "<script>mp_second_buys1='" . $mp_second_buys1 . "';</script>";
+		}	
+		if (isset($mp_third_buys1) AND strlen($mp_third_buys1) > 0) {
+			echo "<script>mp_third_buys1='" . $mp_third_buys1 . "';</script>";
+		}		
+		if (isset($mp_fourth_buys1) AND strlen($mp_fourth_buys1) > 0) {
+			echo "<script>mp_fourth_buys1='" . $mp_fourth_buys1 . "';</script>";
+		}	
+		if (isset($mp_first_buys2) AND strlen($mp_first_buys2) > 0) {
+			echo "<script>mp_first_buys2='" . $mp_first_buys2 . "';</script>";
+		}
+		if (isset($mp_second_buys2) AND strlen($mp_second_buys2) > 0) {
+			echo "<script>mp_second_buys2='" . $mp_second_buys2 . "';</script>";
+		}	
+		if (isset($mp_third_buys2) AND strlen($mp_third_buys2) > 0) {
+			echo "<script>mp_third_buys2='" . $mp_third_buys2 . "';</script>";
+		}		
+		if (isset($mp_fourth_buys2) AND strlen($mp_fourth_buys2) > 0) {
+			echo "<script>mp_fourth_buys2='" . $mp_fourth_buys2 . "';</script>";
+		}	
+		if (isset($mp_first_tips) AND strlen($mp_first_tips) > 0) {
+			echo "<script>mp_first_tips='" . $mp_first_tips . "';</script>";
+		}
+		if (isset($mp_second_tips) AND strlen($mp_second_tips) > 0) {
+			echo "<script>mp_second_tips='" . $mp_second_tips . "';</script>";
+		}	
+		if (isset($mp_third_tips) AND strlen($mp_third_tips) > 0) {
+			echo "<script>mp_third_tips='" . $mp_third_tips . "';</script>";
+		}		
+		if (isset($mp_fourth_tips) AND strlen($mp_fourth_tips) > 0) {
+			echo "<script>mp_fourth_tips='" . $mp_fourth_tips . "';</script>";
+		}					
+	}
+	else {
+		echo "<script>mp_newCounter2 ='no';</script>";	
 	}	
 	
 	echo "<script>mp_mypostid='" . esc_js($mypost_id) . "';</script>";
@@ -945,9 +1120,48 @@ function MedioPay_paywall_function( $attr, $content) {
 add_action ( 'wp_ajax_mp_throwcontent', 'mp_throwcontent' );
 add_action ( 'wp_ajax_nopriv_mp_throwcontent', 'mp_throwcontent' );
 
+
 function mp_throwcontent() {
 	$mp_mypost_id = $_POST['MedioPay_postid'];
 	$mp_outputs = $_POST['MedioPay_outputs'];
+	$mp_number = $_POST['MedioPay_number'] + 1;
+	$mp_userid = $_POST['MedioPay_userID'];
+	$mp_newCounter = $_POST['Mediopay_newCounter'];
+	$mp_share = $_POST['MedioPay_shareQuote'];
+	if ($mp_newCounter == "yes") {
+		update_post_meta( $mp_mypost_id, 'meta_buys1', $mp_number );
+		update_post_meta( $mp_mypost_id, 'meta_share', $mp_share );
+		if ($mp_number == 1) {
+			update_post_meta( $mp_mypost_id, 'meta-first-buys1', $mp_userid);			
+		}
+		if ($mp_number == 2) {
+			update_post_meta( $mp_mypost_id, 'meta-second-buys1', $mp_userid);			
+		}
+		if ($mp_number == 3) {
+			update_post_meta( $mp_mypost_id, 'meta-third-buys1', $mp_userid);			
+		}
+		if ($mp_number == 4) {
+			update_post_meta( $mp_mypost_id, 'meta-fourth-buys1', $mp_userid);			
+		}												
+	}
+	else {
+		update_post_meta($mp_mypost_id, 'meta-newcounter', 'yes');
+		update_post_meta( $mp_mypost_id, 'meta_buys1', $mp_number );
+		update_post_meta( $mp_mypost_id, 'meta_share', $mp_share );
+		if ($_POST['MedioPay_firstPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-first-buys1', $_POST['MedioPay_firstPartner']);				
+		}
+		if ($_POST['MedioPay_secondPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-second-buys1', $_POST['MedioPay_secondPartner']);				
+		}
+		if ($_POST['MedioPay_thirdPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-third-buys1', $_POST['MedioPay_thirdPartner']);				
+		}
+		if ($_POST['MedioPay_fourthPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-fourth-buys1', $_POST['MedioPay_fourthPartner']);				
+		}
+	}
+	// if meta-newCounter doesn't exist // is no: Meta-newcounter = yes.
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mediopay';
 	$mp_paid_content_1 = get_post_meta( $mp_mypost_id, 'meta-paidcontent', true );
@@ -962,10 +1176,9 @@ function mp_throwcontent() {
 			else {
 				echo "nosecret1111" . $mp_meta_secret1 . $mp_paid_content_1;
 			}
-		//echo  $mp_paid_content_1;
 	}
 	else {
-		echo $mp_address . $mp_my_address;	
+		echo "12345654321 Address doesn't match. Are you trying to cheat?";	
 	}
 wp_die();
 }
@@ -976,6 +1189,43 @@ add_action ( 'wp_ajax_nopriv_mp_throwcontent_2', 'mp_throwcontent_2' );
 function mp_throwcontent_2() {
 	$mp_mypost_id = $_POST['MedioPay_postid'];
 	$mp_outputs = $_POST['MedioPay_outputs'];
+	$mp_number = $_POST['MedioPay_number'] + 1;
+	$mp_userid = $_POST['MedioPay_userID'];
+	$mp_newCounter = $_POST['Mediopay_newCounter'];
+	$mp_share = $_POST['MedioPay_shareQuote'];
+	if ($mp_newCounter == "yes") {
+		update_post_meta( $mp_mypost_id, 'meta_buys2', $mp_number );
+		update_post_meta( $mp_mypost_id, 'meta_share', $mp_share );
+		if ($mp_number == 1) {
+			update_post_meta( $mp_mypost_id, 'meta-first-buys2', $mp_userid);			
+		}
+		if ($mp_number == 2) {
+			update_post_meta( $mp_mypost_id, 'meta-second-buys2', $mp_userid);			
+		}
+		if ($mp_number == 3) {
+			update_post_meta( $mp_mypost_id, 'meta-third-buys2', $mp_userid);			
+		}
+		if ($mp_number == 4) {
+			update_post_meta( $mp_mypost_id, 'meta-fourth-buys2', $mp_userid);			
+		}												
+	}
+	else {
+		update_post_meta($mp_mypost_id, 'meta-newcounter2', 'yes');
+		update_post_meta( $mp_mypost_id, 'meta_buys2', $mp_number );
+		update_post_meta( $mp_mypost_id, 'meta_share', $mp_share );
+		if ($_POST['MedioPay_firstPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-first-buys2', $_POST['MedioPay_firstPartner']);				
+		}
+		if ($_POST['MedioPay_secondPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-second-buys2', $_POST['MedioPay_secondPartner']);				
+		}
+		if ($_POST['MedioPay_thirdPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-third-buys2', $_POST['MedioPay_thirdPartner']);				
+		}
+		if ($_POST['MedioPay_fourthPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-fourth-buys2', $_POST['MedioPay_fourthPartner']);				
+		}
+	}
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'posts';
 	$myrows = $wpdb->get_results( "SELECT post_content FROM " . $table_name . " WHERE ID = " . $mp_mypost_id );
@@ -1005,8 +1255,59 @@ function mp_throwcontent_2() {
 			echo "absolutely no secret" . $mp_paid_content_2;
 		}
 	}
+	else {
+		echo "12345654321 Address doesn't match. Are you trying to cheat?";	
+	}
 wp_die();
 }
+
+add_action ( 'wp_ajax_mp_process_tip', 'mp_process_tip' );
+add_action ( 'wp_ajax_nopriv_mp_process_tip', 'mp_process_tip' );
+
+
+function mp_process_tip() {
+	$mp_mypost_id = $_POST['MedioPay_postid'];
+	$mp_outputs = $_POST['MedioPay_outputs'];
+	$mp_number = $_POST['MedioPay_number'] + 1;
+	$mp_userid = $_POST['MedioPay_userID'];
+	$mp_newCounter = $_POST['Mediopay_newCounter'];
+	$mp_share = $_POST['MedioPay_shareQuote'];
+	if ($mp_newCounter == "yes") {
+		update_post_meta( $mp_mypost_id, 'meta_tips', $mp_number );
+		update_post_meta( $mp_mypost_id, 'meta_share', $mp_share );
+		if ($mp_number == 1) {
+			update_post_meta( $mp_mypost_id, 'meta-first-tips', $mp_userid);			
+		}
+		if ($mp_number == 2) {
+			update_post_meta( $mp_mypost_id, 'meta-second-tips', $mp_userid);			
+		}
+		if ($mp_number == 3) {
+			update_post_meta( $mp_mypost_id, 'meta-third-tips', $mp_userid);			
+		}
+		if ($mp_number == 4) {
+			update_post_meta( $mp_mypost_id, 'meta-fourth-tips', $mp_userid);			
+		}												
+	}
+	else {
+		update_post_meta( $mp_mypost_id, 'meta-newcounter', 'yes');
+		update_post_meta( $mp_mypost_id, 'meta_tips', $mp_number );
+		update_post_meta( $mp_mypost_id, 'meta_share', $mp_share );
+		if ($_POST['MedioPay_firstPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-first-tips', $_POST['MedioPay_firstPartner']);				
+		}
+		if ($_POST['MedioPay_secondPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-second-tips', $_POST['MedioPay_secondPartner']);				
+		}
+		if ($_POST['MedioPay_thirdPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-third-tips', $_POST['MedioPay_thirdPartner']);				
+		}
+		if ($_POST['MedioPay_fourthPartner'] !== "no")	{
+			update_post_meta( $mp_mypost_id, 'meta-fourth-tips', $_POST['MedioPay_fourthPartner']);				
+		}
+	}
+wp_die();
+}
+
 
 add_action ( 'wp_ajax_mp_process_cookies', 'mp_process_cookies' );
 add_action ( 'wp_ajax_nopriv_mp_process_cookies', 'mp_process_cookies' );
