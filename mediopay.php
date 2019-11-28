@@ -753,7 +753,12 @@ function mediopay_create_paywall($post_content) {
 		}
 	}
 	if ( isset($myrows[0]->paywallMsg)) {
-		$mp_current_paywall_msg = $myrows[0]->paywallMsg;
+		if (strlen($myrows[0]->paywallMsg) > 1) {
+			$mp_current_paywall_msg = $myrows[0]->paywallMsg;
+		}
+		else {
+			$mp_current_paywall_msg = "Tip the author and continue reading";
+		}
 	}
 	else {
 		$mp_current_paywall_msg = "Tip the author and continue reading";
@@ -947,6 +952,7 @@ function MedioPay_paywall_function( $attr, $content) {
 		echo "<script>mp_newCounter2 ='" . $mp_newcounter2 . "';</script>";
 		$mp_buys1 = get_post_meta( $mypost_id, 'meta_buys1', true );
 		$mp_buys2 = get_post_meta( $mypost_id, 'meta_buys2', true );
+		echo "<script>mp_buys2 ='" . $mp_buys2 . "';</script>";
 		$mp_tips = get_post_meta( $mypost_id, 'meta_tips', true );
 		$mp_first_buys1 = get_post_meta( $mypost_id, 'meta-first-buys1', true );
 		$mp_second_buys1 = get_post_meta( $mypost_id, 'meta-second-buys1', true );	
@@ -1145,6 +1151,7 @@ function mp_throwcontent() {
 		}												
 	}
 	else {
+		echo "update newcounter";
 		update_post_meta($mp_mypost_id, 'meta-newcounter', 'yes');
 		update_post_meta( $mp_mypost_id, 'meta_buys1', $mp_number );
 		update_post_meta( $mp_mypost_id, 'meta_share', $mp_share );
@@ -1210,6 +1217,7 @@ function mp_throwcontent_2() {
 		}												
 	}
 	else {
+		echo "update newcounter";
 		update_post_meta($mp_mypost_id, 'meta-newcounter2', 'yes');
 		update_post_meta( $mp_mypost_id, 'meta_buys2', $mp_number );
 		update_post_meta( $mp_mypost_id, 'meta_share', $mp_share );
@@ -1357,7 +1365,7 @@ function action_pre_comment_on_post( $array ) {
 add_action( 'pre_comment_on_post', 'action_pre_comment_on_post', 10, 1);
 */
 
-function add_non_fake_textarea_field( $default ) {
+/*function add_non_fake_textarea_field( $default ) {
 	$commenter = wp_get_current_commenter();
 	$default['comment_notes_after'] .= 
 	'<p class="comment-form-just_another_id">
@@ -1365,7 +1373,7 @@ function add_non_fake_textarea_field( $default ) {
 	<textarea id="just_another_id" name="just_another_id" cols="45" rows="8" aria-required="true"></textarea>
 	</p>';
 	return $default;
-}
+}*/
  
 add_filter('comment_form_defaults', 'add_non_fake_textarea_field');
 
