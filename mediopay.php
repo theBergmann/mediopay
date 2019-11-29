@@ -625,6 +625,7 @@ add_action( 'save_post', 'mediopay_meta_save' );
 // activate PayWall from the second editor field
 
 function mediopay_create_paywall($post_content) {
+	$mp_home_url = get_home_url() . "/";
 	$actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 	$mypost_id = url_to_postid($actual_link);
 	global $wpdb;
@@ -640,7 +641,7 @@ function mediopay_create_paywall($post_content) {
 	//echo "<script>mp_metasecret2='" . hash('sha256', $mp_meta_secret2) . "';</script>";
 	$mp_newcounter = get_post_meta( $mypost_id, 'meta-newcounter', true );
 	if (isset($mp_newcounter)) {
-		echo "<script>mp_newCounter ='" . $mp_newcounter . "';console.log(mp_newCounter);</script>";
+		echo "<script>mp_newCounter ='" . $mp_newcounter . "';</script>";
 		$mp_buys1 = get_post_meta( $mypost_id, 'meta_buys1', true );
 		$mp_buys2 = get_post_meta( $mypost_id, 'meta_buys2', true );
 		$mp_tips = get_post_meta( $mypost_id, 'meta_tips', true );
@@ -657,10 +658,10 @@ function mediopay_create_paywall($post_content) {
 		$mp_third_tips = get_post_meta( $mypost_id, 'meta-third-tips', true );	
 		$mp_fourth_tips = get_post_meta( $mypost_id, 'meta-fourth-tips', true );	
 		if (isset($mp_buys1) AND strlen($mp_buys1) > 0) {
-			echo "<script>mp_buys1=" . $mp_buys1 . ";console.log('buys1db'); console.log('mp buys ' + mp_buys1);</script>";
+			echo "<script>mp_buys1=" . $mp_buys1 . ";</script>";
 		}	
 		else {
-			echo "<script>mp_buys1=0;console.log('buys1zero');console.log(mp_buys1);</script>";		
+			echo "<script>mp_buys1=0;</script>";		
 		}
 		if (isset($mp_buys2) AND strlen($mp_buys2) > 0) {
 			echo "<script>mp_buys2=" . $mp_buys2 . ";</script>";
@@ -727,7 +728,6 @@ function mediopay_create_paywall($post_content) {
 	$mp_current_fixedAmount = $myrows[0]->fixedAmount;
 	$mp_meta_share  = get_post_meta( $mypost_id, 'meta_share', true );
 	if (isset($mp_meta_share) AND strlen($mp_meta_share) > 0) {
-		echo "<script>console.log('sharing quote meta " . $mp_meta_share . "');</script>";
 		$mp_current_sharing = $mp_meta_share;
 	}
 	else {
@@ -836,6 +836,7 @@ function mediopay_create_paywall($post_content) {
 			 $mp_fullcontent1 .= "<div id='mp_fade' class='mp_fading' >";
 		 }
 	   $mp_fullcontent1 .= $mp_fading_content . "</div>";
+	   if ($actual_link !== $mp_home_url) {
 		 if ($mp_shortcode == "yes") {
 			 $mp_fullcontent1 .= "<div class='mp_frame1 mp_invisible' id='mp_frame1' style='background-color:" . $mp_barColor . "'>";
 		}
@@ -854,7 +855,8 @@ function mediopay_create_paywall($post_content) {
 		 	/></span><br /><div class='money-button' id='tbutton'></div><div id='counterTips'></div></div>";
 		}
 	}
-	else if ($mp_meta_checkbox == "yes") {
+	}
+	else if ($mp_meta_checkbox == "yes" && ($mp_home_url !== $actual_link)) {
 		$path = plugin_dir_url( 'mediopay.php');
 		$path = $path . "mediopay/lib/";
 		$mp_fullcontent1 = $post_content . "<div style='clear:both;'><div class='mp_frame1' id='mp_tipFrame' style='background-color:" . $mp_barColor . "'><font size='5'>" . $mp_current_tipping_msg . "</font><br />
@@ -910,6 +912,7 @@ function MedioPay_paywall_function( $attr, $content) {
 	global $wpdb;
 	$table_name = $wpdb->prefix;
 	$actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+	$mp_home_url = get_home_url() . "/";	
 	$mypost_id = url_to_postid($actual_link);
 	$meta_paidcontent = get_post_meta( $mypost_id, 'meta-paidcontent', true );
 	$mp_meta_checkbox = get_post_meta( $mypost_id, 'mp_meta_checkbox', true );
@@ -928,8 +931,7 @@ function MedioPay_paywall_function( $attr, $content) {
 	$mp_current_fixedAmount = $myrows[0]->fixedAmount;
 	$mp_meta_share  = get_post_meta( $mypost_id, 'meta_share', true );
 	if (isset($mp_meta_share) AND strlen($mp_meta_share) > 0) {
-		echo "<script>console.log('sharing quote meta " . $mp_meta_share . "');</script>";
-		$mp_current_sharing = $mp_meta_share;
+			$mp_current_sharing = $mp_meta_share;
 	}
 	else {
 		$mp_current_sharing = $myrows[0]->sharingQuote;
@@ -967,10 +969,9 @@ function MedioPay_paywall_function( $attr, $content) {
 		$mp_third_tips = get_post_meta( $mypost_id, 'meta-third-tips', true );	
 		$mp_fourth_tips = get_post_meta( $mypost_id, 'meta-fourth-tips', true );	
 		if (isset($mp_buys1) AND strlen($mp_buys1) > 0) {
-			echo "<script>mp_buys1=" . $mp_buys1 . ";console.log('buys1db'); console.log('mp buys ' + mp_buys1);</script>";
+			echo "<script>mp_buys1=" . $mp_buys1 . ";</script>";
 		}	
 		else {
-			echo "<script>mp_buys1=0;console.log('buys1zero');console.log(mp_buys1);</script>";		
 		}
 		if (isset($mp_buys2) AND strlen($mp_buys2) > 0) {
 			echo "<script>mp_buys2=" . $mp_buys2 . ";</script>";
@@ -1107,11 +1108,12 @@ function MedioPay_paywall_function( $attr, $content) {
 	};
 ?>
 <div id='mp_fade2' class='mp_fading' ><?php echo $mp_fading_content_2 ?></div>
+		<?php if ($actual_link !== $mp_home_url) { ?>
 		<div class='mp_frame2' id='mp_frame2' style='background-color:<?php echo $mp_barColor ?>'><script>MedioPay_textColor('mp_frame2');</script><?php echo $behindTheWall2 ?><div class='money-button' id='mbutton2'></div>
 			<div id='mp_counter2'></div>
 		</div>
 			<div id='mp_unlockable2'><div id='mp_unlockable2_content'></div>
-
+		<?php } ?>
 <script>
 	if (typeof mp_checkBox == "undefined") {
 		mp_checkBox = "no";
@@ -1172,7 +1174,7 @@ function mp_throwcontent() {
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'mediopay';
 	$mp_paid_content_1 = get_post_meta( $mp_mypost_id, 'meta-paidcontent', true );
-	$mp_paid_content_1= nl2br($mp_paid_content_1);
+	//$mp_paid_content_1= nl2br($mp_paid_content_1);
 	$myrows = $wpdb->get_results( "SELECT address FROM " . $table_name . " WHERE id = 1" );
 	$mp_address = $myrows[0]->address;
 	if (in_array($mp_address, $mp_outputs)) {
@@ -1331,7 +1333,7 @@ function mp_process_cookies() {
 			global $wpdb;
 	   	$table_name = $wpdb->prefix . 'mediopay';
 			$mp_paid_content_1 = get_post_meta( $mp_mypost_id, 'meta-paidcontent', true );
-			$mp_paid_content_1= nl2br($mp_paid_content_1);	
+			//$mp_paid_content_1= nl2br($mp_paid_content_1);
 			echo $mp_paid_content_1;	
 		}
 		else {
@@ -1346,7 +1348,7 @@ function mp_process_cookies() {
 			$mp_pos = strpos($mp_paid_content_2, "[paywall]");
 			$mp_pos2 = strpos($mp_paid_content_2, "[/paywall]");
 			$mp_paid_content_2 = substr($mp_paid_content_2, ($mp_pos + 9), ($mp_pos2 - $mp_pos - 9));
-			$mp_paid_content_2 =  nl2br($mp_paid_content_2);
+			$mp_paid_content_2 = nl2br($mp_paid_content_2);
 			echo $mp_paid_content_2;
 		}
 		else {
@@ -1364,8 +1366,8 @@ function action_pre_comment_on_post( $array ) {
 
 add_action( 'pre_comment_on_post', 'action_pre_comment_on_post', 10, 1);
 */
-
-/*function add_non_fake_textarea_field( $default ) {
+/*
+function add_non_fake_textarea_field( $default ) {
 	$commenter = wp_get_current_commenter();
 	$default['comment_notes_after'] .= 
 	'<p class="comment-form-just_another_id">
@@ -1373,9 +1375,11 @@ add_action( 'pre_comment_on_post', 'action_pre_comment_on_post', 10, 1);
 	<textarea id="just_another_id" name="just_another_id" cols="45" rows="8" aria-required="true"></textarea>
 	</p>';
 	return $default;
-}*/
+}
  
-add_filter('comment_form_defaults', 'add_non_fake_textarea_field');
+add_filter('comment_form_defaults', 'add_non_fake_textarea_field');*/
+
+
 
 
 ?>
