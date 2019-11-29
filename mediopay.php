@@ -1132,8 +1132,13 @@ add_action ( 'wp_ajax_nopriv_mp_throwcontent', 'mp_throwcontent' );
 function mp_throwcontent() {
 	$mp_mypost_id = $_POST['MedioPay_postid'];
 	$mp_outputs = $_POST['MedioPay_outputs'];
-	$mp_number = $_POST['MedioPay_number'] + 1;
-	$mp_userid = $_POST['MedioPay_userID'];
+		$mp_is_preview = $_POST['MedioPay_preview'];
+	if ($mp_is_preview == "yes") {
+		$mp_number = $_POST['MedioPay_number'];
+	}
+	else {
+		$mp_number = $_POST['MedioPay_number'] + 1;
+	}	$mp_userid = $_POST['MedioPay_userID'];
 	$mp_newCounter = $_POST['Mediopay_newCounter'];
 	$mp_share = $_POST['MedioPay_shareQuote'];
 	if ($mp_newCounter == "yes") {
@@ -1198,7 +1203,13 @@ add_action ( 'wp_ajax_nopriv_mp_throwcontent_2', 'mp_throwcontent_2' );
 function mp_throwcontent_2() {
 	$mp_mypost_id = $_POST['MedioPay_postid'];
 	$mp_outputs = $_POST['MedioPay_outputs'];
-	$mp_number = $_POST['MedioPay_number'] + 1;
+		$mp_is_preview = $_POST['MedioPay_preview'];
+	if ($mp_is_preview == "yes") {
+		$mp_number = $_POST['MedioPay_number'];
+	}
+	else {
+		$mp_number = $_POST['MedioPay_number'] + 1;
+	}
 	$mp_userid = $_POST['MedioPay_userID'];
 	$mp_newCounter = $_POST['Mediopay_newCounter'];
 	$mp_share = $_POST['MedioPay_shareQuote'];
@@ -1278,7 +1289,13 @@ add_action ( 'wp_ajax_nopriv_mp_process_tip', 'mp_process_tip' );
 function mp_process_tip() {
 	$mp_mypost_id = $_POST['MedioPay_postid'];
 	$mp_outputs = $_POST['MedioPay_outputs'];
-	$mp_number = $_POST['MedioPay_number'] + 1;
+	$mp_is_preview = $_POST['MedioPay_preview'];
+	if ($mp_is_preview == "yes") {
+		$mp_number = $_POST['MedioPay_number'];
+	}
+	else {
+		$mp_number = $_POST['MedioPay_number'] + 1;
+	}
 	$mp_userid = $_POST['MedioPay_userID'];
 	$mp_newCounter = $_POST['Mediopay_newCounter'];
 	$mp_share = $_POST['MedioPay_shareQuote'];
