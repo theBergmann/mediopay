@@ -3,8 +3,8 @@
 Contributors: @christophbergmann
 Donate link: ---
 Tags: paywall, tips, bsv, moneybutton, revenue
-Requires at least: 4.6
-Tested up to: 5.2.4
+Requires at least: 4.7
+Tested up to: 5.3.2
 Stable tag: 5.2.4
 Requires PHP: 6.3
 License: GPLv2 or later
@@ -19,6 +19,7 @@ MedioPay allows PayWalls and Tip Button for Wordpress using the BSV-app MoneyBut
 - one-click payments
 - paywall management with second editor field or shortcode
 - payments directly to your wallet
+- split payouts to different parties (author, editor)
 - No third party registration needed
 - incentivise your audience - first buyers get a share on later payments, ref links possible
 - analytics - payments contain metainformation, allowing to track and analyse the performance of your content
@@ -118,17 +119,16 @@ Screenshots mp_screenshot_1.png to mp_screenshot_8.png are in the /assets direct
 
 == Changelog ==
 
-= 1.5 =
+= 1.7 =
 
-Introducing cookies to show paid posts automatically. Allowing bloggers to set individual texts on paywalls.
+Many changes:
+- Migrate from Ajax to Wordpress Rest API for client server communication
+- various performance updates
+- introduce editable tipping buttons (freely choosable amount)
+- introduce tipping fields in the text with shortcode [tipme]
+- introduce payout split to second receiver
+- allow user to set link color in paywall fields
 
 == Development ==
 
 We manage a development version of MedioPay on https://github.com/theBergmann/MedioPay
-
-
-
-
-
-
-
