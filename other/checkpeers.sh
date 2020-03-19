@@ -1,10 +1,8 @@
 while true
 do
 peers=$(./bitcoin-sv-1.0.1/bin/bitcoin-cli --datadir=.bitcoinsv getpeerinfo)
-##for i in {1..2}
 lengthof=$(echo $peers | jq length)
 echo $lengthof
-##do
 for i in $(seq 0 $lengthof)
 do
         num=$i
@@ -30,7 +28,7 @@ do
         else
                 echo $address
                 echo "not ok" $version
-                ./bitcoin-sv-1.0.1/bin/bitcoin-cli --datadir=.bitcoinsv setban $address "add"
+                ./bitcoin-sv-1.0.1/bin/bitcoin-cli --datadir=.bitcoin setban $address "add"
         fi
 done
 sleep 10
